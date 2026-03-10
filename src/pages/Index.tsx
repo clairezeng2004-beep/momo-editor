@@ -677,10 +677,8 @@ const Index = () => {
       </header>
 
       {/* Main - Desktop uses resizable panels */}
+      {/* Mobile layout - preview only, no sidebar */}
       <div className="flex-1 flex flex-col lg:hidden overflow-hidden">
-        <aside className="w-full border-b border-border/50 bg-card/60 overflow-y-auto shrink-0 max-h-[50vh]">
-          {sidebarContent}
-        </aside>
         <div className="flex-1 overflow-y-auto">
           {previewContent}
         </div>
