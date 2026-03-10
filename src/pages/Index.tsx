@@ -372,6 +372,7 @@ const Index = () => {
           fontSize={fontSize}
           textAlign={textAlign}
           templateClassName={template.className}
+          templateBackground={template.background}
           onContentChange={handleContentChange}
           contentRef={contentRef}
           directHtml={directHtml}
