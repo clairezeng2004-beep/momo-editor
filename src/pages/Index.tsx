@@ -181,18 +181,25 @@ const Index = () => {
   }, [history]);
 
   const handleExport = async () => {
-    if (!cardRef.current) return;
+    // Export all page cards
+    const pageElements = document.querySelectorAll('[data-page-index]');
+    if (pageElements.length === 0) return;
     setExporting(true);
     try {
       const scale = 3;
-      const dataUrl = await toPng(cardRef.current, {
-        pixelRatio: scale,
-        cacheBust: true,
-      });
-      const link = document.createElement("a");
-      link.download = `xiaohongshu-${Date.now()}.png`;
-      link.href = dataUrl;
-      link.click();
+      for (let i = 0; i < pageElements.length; i++) {
+        const el = pageElements[i] as HTMLElement;
+        const dataUrl = await toPng(el, {
+          pixelRatio: scale,
+          cacheBust: true,
+        });
+        const link = document.createElement("a");
+        link.download = `xiaohongshu-${Date.now()}-${i + 1}.png`;
+        link.href = dataUrl;
+        link.click();
+        // Small delay between downloads
+        if (pageElements.length > 1) await new Promise(r => setTimeout(r, 300));
+      }
     } catch (e) {
       console.error(e);
     } finally {
