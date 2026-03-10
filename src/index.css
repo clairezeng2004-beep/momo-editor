@@ -6,10 +6,10 @@
 
 @layer base {
   :root {
-    --background: 0 0% 96%;
+    --background: 40 6% 95%;
     --foreground: 0 0% 12%;
 
-    --card: 0 0% 100%;
+    --card: 40 10% 98%;
     --card-foreground: 0 0% 12%;
 
     --popover: 0 0% 100%;
@@ -89,7 +89,7 @@
 
 /* Template styles for the rendered card */
 .template-clean {
-  background: #ffffff;
+  background: #fefefe;
   color: #1a1a1a;
 }
 
