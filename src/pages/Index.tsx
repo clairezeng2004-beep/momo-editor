@@ -445,9 +445,9 @@ const Index = () => {
     }
   };
 
-
-  const syncTextareaHeight = useCallback(() => {
-
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false, style: true, ratio: true, font: true });
+  const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  const [showSettingsSheet, setShowSettingsSheet] = useState(false);
 
   const rgbToHex = (r: number, g: number, b: number) =>
     "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
