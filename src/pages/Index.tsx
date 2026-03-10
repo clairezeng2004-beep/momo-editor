@@ -327,7 +327,7 @@ const Index = () => {
 
   const renderedHtml = directHtml ?? getHtml();
 
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false });
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const CollapsibleSection = ({ id, icon: Icon, label, children }: { id: string; icon: React.ElementType; label: string; children: React.ReactNode }) => {
@@ -398,7 +398,7 @@ const Index = () => {
 
       {/* Editor */}
       <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border/60`}>
-        <div className="p-5 space-y-3">
+        <div className="p-5 space-y-4">
           <CollapsibleSection id="editor" icon={Edit3} label="编辑">
             <div className="flex items-center justify-end gap-0.5 mb-2">
               <button
@@ -423,6 +423,7 @@ const Index = () => {
               markdown={markdown}
               onChange={handleMarkdownChange}
             />
+            <div className="mt-3">
             <textarea
               ref={textareaRef}
               value={markdown}
@@ -441,6 +442,7 @@ const Index = () => {
               placeholder="在此输入内容，直接换行即可分段..."
               style={{ overflow: 'hidden' }}
             />
+            </div>
           </CollapsibleSection>
         </div>
       </div>
