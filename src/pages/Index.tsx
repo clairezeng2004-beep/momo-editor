@@ -492,12 +492,12 @@ const Index = () => {
           <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
             <Type className="w-4 h-4 text-background" />
           </div>
-          <h1 className="text-lg font-bold tracking-tight hidden sm:block">文字卡片生成器</h1>
+          <h1 className="text-lg font-bold tracking-tight hidden sm:block">CardNote</h1>
           {/* Draft selector */}
           <div className="relative" ref={draftDropdownRef}>
             <button
               onClick={() => setShowDraftList(!showDraftList)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-sm hover:bg-secondary/80 transition-colors max-w-[180px]"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-sm hover:bg-secondary/80 transition-colors max-w-[280px]"
             >
               <FileText className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate">{currentDraft?.title ?? "未命名"}</span>
