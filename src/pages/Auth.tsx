@@ -67,7 +67,7 @@ const Auth = () => {
 
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={handleGoogleLogin}
+            onClick={() => handleOAuthLogin("google")}
             className="flex items-center justify-center gap-2 bg-card border border-border rounded-xl px-4 py-3 text-sm font-medium hover:bg-secondary/60 transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
