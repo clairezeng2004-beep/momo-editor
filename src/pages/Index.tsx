@@ -582,10 +582,8 @@ const Index = () => {
       {/* Header */}
       <header className="sticky top-0 border-b border-border/50 bg-card/95 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0 z-[200]">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-foreground/90 flex items-center justify-center">
-            <Type className="w-3.5 h-3.5 text-background" />
-          </div>
-          <h1 className="text-[15px] font-semibold tracking-tight hidden sm:block text-foreground/90">CardNote</h1>
+          <img src={momoLogo} alt="Momo Editor" className="w-7 h-7 rounded-lg object-cover" />
+          <h1 className="text-[15px] font-semibold tracking-tight hidden sm:block text-foreground/90">Momo Editor</h1>
           {/* Draft selector */}
           <div className="relative" ref={draftDropdownRef}>
             <button
