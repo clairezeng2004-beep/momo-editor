@@ -253,7 +253,7 @@ const Index = () => {
 
   useLayoutEffect(() => {
     syncTextareaHeight();
-  }, [markdown, isMobile, showSettingsSheet, syncTextareaHeight]);
+  }, [markdown, isMobile, syncTextareaHeight]);
 
   useEffect(() => {
     window.addEventListener("resize", syncTextareaHeight);
