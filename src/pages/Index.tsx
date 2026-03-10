@@ -4,7 +4,7 @@ import { toPng } from "html-to-image";
 import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
-import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight } from "lucide-react";
+import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight, Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import FormatToolbar from "@/components/FormatToolbar";
 import FloatingToolbar from "@/components/FloatingToolbar";
@@ -19,6 +19,11 @@ import {
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const CARD_WIDTH = 420;
 
@@ -413,8 +418,9 @@ const Index = () => {
 
   const renderedHtml = directHtml ?? getHtml();
 
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false });
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false, style: true, ratio: true, font: true });
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  const [showSettingsSheet, setShowSettingsSheet] = useState(false);
 
   // Auto-resize textarea to fit content
   useEffect(() => {
@@ -425,94 +431,94 @@ const Index = () => {
     }
   }, [markdown]);
 
+  const settingsContent = (
+    <div className="p-5 space-y-5">
+      <CollapsibleSection id="style" icon={Eye} label="样式" collapsed={collapsedSections["style"] ?? true} onToggle={toggleSection}>
+        <TemplateSelector
+          selected={template}
+          onSelect={(t) => {
+            setTemplate(t);
+            if ("isCustom" in t) {
+              setFontSize((t as CustomTemplate).defaultFontSize);
+            }
+          }}
+          allTemplates={[...TEMPLATES, ...customTemplates.templates]}
+          onCreateNew={() => { setEditingTemplate(null); setShowTemplateEditor(true); }}
+          onEdit={(t) => { setEditingTemplate(t); setShowTemplateEditor(true); }}
+          onDelete={(id) => {
+            customTemplates.deleteTemplate(id);
+            if (template.id === id) setTemplate(TEMPLATES[0]);
+          }}
+        />
+      </CollapsibleSection>
+
+      <CollapsibleSection id="ratio" icon={Ratio} label="比例" collapsed={collapsedSections["ratio"] ?? true} onToggle={toggleSection}>
+        <RatioSelector selected={ratio} onSelect={setRatio} />
+      </CollapsibleSection>
+
+      <CollapsibleSection id="font" icon={Type} label={`字号 · ${fontSize}px`} collapsed={collapsedSections["font"] ?? true} onToggle={toggleSection}>
+        <input
+          type="range"
+          min={12}
+          max={24}
+          value={fontSize}
+          onChange={(e) => setFontSize(Number(e.target.value))}
+          className="w-full accent-foreground h-1 appearance-none bg-border rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:cursor-pointer"
+        />
+      </CollapsibleSection>
+    </div>
+  );
+
+  const editorContent = (
+    <div className="border-t border-border/60">
+      <div className="p-5 space-y-4">
+        <CollapsibleSection id="editor" icon={Edit3} label="编辑" collapsed={collapsedSections["editor"] ?? false} onToggle={toggleSection}>
+          <div className="flex items-center justify-end gap-0.5 mb-2">
+            <button
+              onClick={() => { history.undo(); setDirectHtml(null); }}
+              disabled={!history.canUndo}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+              title="撤销 (Ctrl+Z)"
+            >
+              <Undo2 className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => { history.redo(); setDirectHtml(null); }}
+              disabled={!history.canRedo}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
+              title="重做 (Ctrl+Shift+Z)"
+            >
+              <Redo2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <FormatToolbar
+            textareaRef={textareaRef}
+            markdown={markdown}
+            onChange={handleMarkdownChange}
+          />
+          <div className="mt-3">
+          <textarea
+            ref={textareaRef}
+            value={markdown}
+            onChange={(e) => {
+              handleMarkdownChange(e.target.value);
+            }}
+            className="w-full min-h-[80px] bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
+            placeholder="在此输入内容，直接换行即可分段..."
+            style={{ overflow: 'hidden' }}
+          />
+          </div>
+        </CollapsibleSection>
+      </div>
+    </div>
+  );
+
   const sidebarContent = (
     <>
-      <div className="p-5 space-y-5">
-        <CollapsibleSection id="style" icon={Eye} label="样式" collapsed={collapsedSections["style"] ?? false} onToggle={toggleSection}>
-          <TemplateSelector
-            selected={template}
-            onSelect={(t) => {
-              setTemplate(t);
-              if ("isCustom" in t) {
-                setFontSize((t as CustomTemplate).defaultFontSize);
-              }
-            }}
-            allTemplates={[...TEMPLATES, ...customTemplates.templates]}
-            onCreateNew={() => { setEditingTemplate(null); setShowTemplateEditor(true); }}
-            onEdit={(t) => { setEditingTemplate(t); setShowTemplateEditor(true); }}
-            onDelete={(id) => {
-              customTemplates.deleteTemplate(id);
-              if (template.id === id) setTemplate(TEMPLATES[0]);
-            }}
-          />
-        </CollapsibleSection>
-
-        <CollapsibleSection id="ratio" icon={Ratio} label="比例" collapsed={collapsedSections["ratio"] ?? false} onToggle={toggleSection}>
-          <RatioSelector selected={ratio} onSelect={setRatio} />
-        </CollapsibleSection>
-
-        <CollapsibleSection id="font" icon={Type} label={`字号 · ${fontSize}px`} collapsed={collapsedSections["font"] ?? false} onToggle={toggleSection}>
-          <input
-            type="range"
-            min={12}
-            max={24}
-            value={fontSize}
-            onChange={(e) => setFontSize(Number(e.target.value))}
-            className="w-full accent-foreground h-1 appearance-none bg-border rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:cursor-pointer"
-          />
-        </CollapsibleSection>
-
-        {/* Toggle editor on mobile */}
-        <button
-          onClick={() => setShowEditor(!showEditor)}
-          className="lg:hidden w-full flex items-center justify-center gap-2 bg-secondary/60 text-secondary-foreground px-4 py-2.5 rounded-xl text-[13px] font-medium hover:bg-secondary transition-colors"
-        >
-          <Edit3 className="w-4 h-4" />
-          {showEditor ? "隐藏编辑器" : "显示编辑器"}
-        </button>
-      </div>
-
-      {/* Editor */}
-      <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border/60`}>
-        <div className="p-5 space-y-4">
-          <CollapsibleSection id="editor" icon={Edit3} label="编辑" collapsed={collapsedSections["editor"] ?? false} onToggle={toggleSection}>
-            <div className="flex items-center justify-end gap-0.5 mb-2">
-              <button
-                onClick={() => { history.undo(); setDirectHtml(null); }}
-                disabled={!history.canUndo}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
-                title="撤销 (Ctrl+Z)"
-              >
-                <Undo2 className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => { history.redo(); setDirectHtml(null); }}
-                disabled={!history.canRedo}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
-                title="重做 (Ctrl+Shift+Z)"
-              >
-                <Redo2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            <FormatToolbar
-              textareaRef={textareaRef}
-              markdown={markdown}
-              onChange={handleMarkdownChange}
-            />
-            <div className="mt-3">
-            <textarea
-              ref={textareaRef}
-              value={markdown}
-              onChange={(e) => {
-                handleMarkdownChange(e.target.value);
-              }}
-              className="w-full min-h-[80px] bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
-              placeholder="在此输入内容，直接换行即可分段..."
-              style={{ overflow: 'hidden' }}
-            />
-            </div>
-          </CollapsibleSection>
-        </div>
+      {settingsContent}
+      {/* Editor - hidden on mobile, visible on desktop */}
+      <div className="hidden lg:block">
+        {editorContent}
       </div>
     </>
   );
@@ -583,6 +589,20 @@ const Index = () => {
       {/* Header */}
       <header className="sticky top-0 border-b border-border/50 bg-card/95 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0 z-[200]">
         <div className="flex items-center gap-3">
+          {/* Menu button - opens settings sheet */}
+          <Sheet open={showSettingsSheet} onOpenChange={setShowSettingsSheet}>
+            <SheetTrigger asChild>
+              <button className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors">
+                <Menu className="w-4.5 h-4.5 text-foreground/80" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] p-0 overflow-y-auto">
+              <div className="pt-12">
+                {settingsContent}
+                {editorContent}
+              </div>
+            </SheetContent>
+          </Sheet>
           <img src={momoLogo} alt="Momo Editor" className="w-7 h-7 rounded-lg object-cover" />
           <h1 className="text-[15px] font-semibold tracking-tight hidden sm:block text-foreground/90">Momo Editor</h1>
           {/* Draft selector */}
@@ -657,10 +677,8 @@ const Index = () => {
       </header>
 
       {/* Main - Desktop uses resizable panels */}
+      {/* Mobile layout - preview only, no sidebar */}
       <div className="flex-1 flex flex-col lg:hidden overflow-hidden">
-        <aside className="w-full border-b border-border/50 bg-card/60 overflow-y-auto shrink-0 max-h-[50vh]">
-          {sidebarContent}
-        </aside>
         <div className="flex-1 overflow-y-auto">
           {previewContent}
         </div>
