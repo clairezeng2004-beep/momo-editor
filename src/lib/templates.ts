@@ -4,6 +4,8 @@ export interface TemplateStyle {
   className: string;
   previewBg: string;
   previewText: string;
+  /** Inline background style applied to the card for accurate export */
+  background: string;
 }
 
 export const TEMPLATES: TemplateStyle[] = [
