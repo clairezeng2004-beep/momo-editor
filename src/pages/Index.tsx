@@ -3,6 +3,7 @@ import momoLogo from "@/assets/momo-logo.jpg";
 import { toPng } from "html-to-image";
 import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
+import { COLOR_PALETTE } from "@/lib/colors";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
 import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight, Menu, LogOut } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
