@@ -351,7 +351,7 @@ const Index = () => {
 
   const sidebarContent = (
     <>
-      <div className="p-5 space-y-6">
+      <div className="p-5 space-y-5">
         <CollapsibleSection id="style" icon={Eye} label="样式">
           <TemplateSelector
             selected={template}
@@ -375,21 +375,21 @@ const Index = () => {
           <RatioSelector selected={ratio} onSelect={setRatio} />
         </CollapsibleSection>
 
-        <CollapsibleSection id="font" icon={Type} label={`字号 (${fontSize}px)`}>
+        <CollapsibleSection id="font" icon={Type} label={`字号 · ${fontSize}px`}>
           <input
             type="range"
             min={12}
             max={24}
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
-            className="w-full accent-foreground"
+            className="w-full accent-foreground h-1 appearance-none bg-border rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:cursor-pointer"
           />
         </CollapsibleSection>
 
         {/* Toggle editor on mobile */}
         <button
           onClick={() => setShowEditor(!showEditor)}
-          className="lg:hidden w-full flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-4 py-2.5 rounded-lg text-sm font-medium"
+          className="lg:hidden w-full flex items-center justify-center gap-2 bg-secondary/60 text-secondary-foreground px-4 py-2.5 rounded-xl text-[13px] font-medium hover:bg-secondary transition-colors"
         >
           <Edit3 className="w-4 h-4" />
           {showEditor ? "隐藏编辑器" : "显示编辑器"}
@@ -397,14 +397,14 @@ const Index = () => {
       </div>
 
       {/* Editor */}
-      <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border`}>
+      <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border/60`}>
         <div className="p-5 space-y-3">
-          <CollapsibleSection id="editor" icon={Edit3} label="Markdown 编辑">
-            <div className="flex items-center justify-end gap-1 mb-2">
+          <CollapsibleSection id="editor" icon={Edit3} label="编辑">
+            <div className="flex items-center justify-end gap-0.5 mb-2">
               <button
                 onClick={() => { history.undo(); setDirectHtml(null); }}
                 disabled={!history.canUndo}
-                className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
                 title="撤销 (Ctrl+Z)"
               >
                 <Undo2 className="w-3.5 h-3.5" />
@@ -412,7 +412,7 @@ const Index = () => {
               <button
                 onClick={() => { history.redo(); setDirectHtml(null); }}
                 disabled={!history.canRedo}
-                className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
                 title="重做 (Ctrl+Shift+Z)"
               >
                 <Redo2 className="w-3.5 h-3.5" />
@@ -430,10 +430,16 @@ const Index = () => {
                 handleMarkdownChange(e.target.value);
                 const el = e.target;
                 el.style.height = 'auto';
-                el.style.height = `${Math.max(200, el.scrollHeight)}px`;
+                el.style.height = `${el.scrollHeight}px`;
               }}
-              className="w-full min-h-[200px] bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
+              onFocus={(e) => {
+                const el = e.target;
+                el.style.height = 'auto';
+                el.style.height = `${el.scrollHeight}px`;
+              }}
+              className="w-full min-h-[120px] bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
               placeholder="在此输入内容，直接换行即可分段..."
+              style={{ overflow: 'hidden' }}
             />
           </CollapsibleSection>
         </div>
