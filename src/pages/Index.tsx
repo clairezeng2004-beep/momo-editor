@@ -216,6 +216,9 @@ const Index = () => {
   const [showEditor, setShowEditor] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [directHtml, setDirectHtml] = useState<string | null>(null);
+  const [footerEnabled, setFooterEnabled] = useState(true);
+  const [footerText, setFooterText] = useState("页脚可以在这里编辑或删除");
+  const [footerColor, setFooterColor] = useState("#C8A951");
   const contentRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -535,6 +538,45 @@ const Index = () => {
           className="w-full accent-foreground h-1 appearance-none bg-border rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:cursor-pointer"
         />
       </CollapsibleSection>
+
+      <CollapsibleSection id="footer" icon={Edit3} label="页脚" collapsed={collapsedSections["footer"] ?? true} onToggle={toggleSection}>
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 text-[13px] text-foreground cursor-pointer">
+            <input
+              type="checkbox"
+              checked={footerEnabled}
+              onChange={(e) => setFooterEnabled(e.target.checked)}
+              className="accent-foreground"
+            />
+            显示页脚
+          </label>
+          {footerEnabled && (
+            <>
+              <input
+                type="text"
+                value={footerText}
+                onChange={(e) => setFooterText(e.target.value)}
+                className="w-full bg-background border border-border/60 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                placeholder="页脚文本"
+              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={footerColor}
+                  onChange={(e) => setFooterColor(e.target.value)}
+                  className="w-7 h-7 rounded border border-border/60 cursor-pointer bg-transparent p-0"
+                />
+                <input
+                  type="text"
+                  value={footerColor}
+                  onChange={(e) => setFooterColor(e.target.value)}
+                  className="flex-1 bg-background border border-border/60 rounded-lg px-3 py-1.5 text-[13px] font-mono focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </CollapsibleSection>
     </div>
   );
 
@@ -595,19 +637,21 @@ const Index = () => {
           {Object.entries(COLOR_PALETTE).map(([group, colors]) => (
             <div key={group}>
               <p className="text-[11px] text-muted-foreground mb-1.5">{group}</p>
-              <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
-                {colors.map((c) => (
-                  <button
-                    key={c.color}
-                    onClick={() => {
-                      document.execCommand("foreColor", false, c.color);
-                      handleContentChange();
-                    }}
-                    className="w-7 h-7 shrink-0 rounded-full border border-border/60 hover:scale-110 transition-transform"
-                    style={{ backgroundColor: c.color }}
-                    title={c.label}
-                  />
-                ))}
+              <div className="overflow-x-auto pb-1.5 scrollbar-hide" style={{ maxWidth: 'calc(4.5 * 36px)' }}>
+                <div className="flex gap-2 w-max">
+                  {colors.map((c) => (
+                    <button
+                      key={c.color}
+                      onClick={() => {
+                        document.execCommand("foreColor", false, c.color);
+                        handleContentChange();
+                      }}
+                      className="w-7 h-7 shrink-0 rounded-full border border-border/60 hover:scale-110 transition-transform"
+                      style={{ backgroundColor: c.color }}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           ))}
@@ -773,6 +817,9 @@ const Index = () => {
           contentRef={contentRef}
           directHtml={directHtml}
           markdown={markdown}
+          footerEnabled={footerEnabled}
+          footerText={footerText}
+          footerColor={footerColor}
         />
       </div>
       </div>
@@ -814,7 +861,7 @@ const Index = () => {
                 <Menu className="w-4.5 h-4.5 text-foreground/80" />
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[272px] max-w-[82vw] p-0 overflow-y-auto sm:w-[284px]">
+            <SheetContent side="left" className="w-[220px] max-w-[62vw] p-0 overflow-y-auto sm:w-[240px] sm:max-w-[55vw]">
               <div className="pt-12">
                 {settingsContent}
                 {mobileColorPicker}
