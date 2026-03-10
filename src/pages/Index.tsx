@@ -447,6 +447,41 @@ const Index = () => {
     }
   }, [markdown]);
 
+  const rgbToHex = (r: number, g: number, b: number) =>
+    "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+
+  const handleEyedropperUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { setEyedropperImage(reader.result as string); setPickedColor(null); };
+    reader.readAsDataURL(file);
+  };
+
+  const handleEyedropperCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = eyedropperCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width));
+    const y = Math.floor((e.clientY - rect.top) * (canvas.height / rect.height));
+    const pixel = ctx.getImageData(x, y, 1, 1).data;
+    const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+    setPickedColor(hex);
+  }, []);
+
+  const handleEyedropperImgLoad = useCallback(() => {
+    const canvas = eyedropperCanvasRef.current;
+    const img = eyedropperImgRef.current;
+    if (!canvas || !img) return;
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0);
+  }, []);
+
   if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
