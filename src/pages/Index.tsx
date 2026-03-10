@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useLayoutEffect } from "react";
 import momoLogo from "@/assets/momo-logo.jpg";
 import { toPng } from "html-to-image";
 import { marked } from "marked";
@@ -244,14 +244,21 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, [markdown, template.id, ratio.id, fontSize, drafts.currentDraftId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-resize textarea
-  useEffect(() => {
+  const syncTextareaHeight = useCallback(() => {
     const el = textareaRef.current;
-    if (el) {
-      el.style.height = 'auto';
-      el.style.height = `${el.scrollHeight}px`;
-    }
-  }, [markdown]);
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
+
+  useLayoutEffect(() => {
+    syncTextareaHeight();
+  }, [markdown, isMobile, syncTextareaHeight]);
+
+  useEffect(() => {
+    window.addEventListener("resize", syncTextareaHeight);
+    return () => window.removeEventListener("resize", syncTextareaHeight);
+  }, [syncTextareaHeight]);
 
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
 
@@ -442,14 +449,11 @@ const Index = () => {
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
 
-  // Auto-resize textarea to fit content
   useEffect(() => {
-    const el = textareaRef.current;
-    if (el) {
-      el.style.height = 'auto';
-      el.style.height = `${el.scrollHeight}px`;
+    if (showSettingsSheet) {
+      requestAnimationFrame(syncTextareaHeight);
     }
-  }, [markdown]);
+  }, [showSettingsSheet, syncTextareaHeight]);
 
   const rgbToHex = (r: number, g: number, b: number) =>
     "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
@@ -565,11 +569,13 @@ const Index = () => {
           <div className="mt-3">
           <textarea
             ref={textareaRef}
+            rows={1}
             value={markdown}
             onChange={(e) => {
               handleMarkdownChange(e.target.value);
             }}
-            className="w-full min-h-[80px] bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
+            onInput={syncTextareaHeight}
+            className="w-full bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
             placeholder="在此输入内容，直接换行即可分段..."
             style={{ overflow: 'hidden' }}
           />

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useLayoutEffect } from "react";
 import { DEFAULT_MARKDOWN as BUILTIN_DEFAULT } from "@/lib/templates";
 import { getDefaultMarkdown, setDefaultMarkdown, resetDefaultMarkdown } from "@/components/DefaultMarkdownEditor";
 import { ArrowLeft, RotateCcw, Save } from "lucide-react";
@@ -15,20 +15,27 @@ const GuidePage = () => {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const syncTextareaHeight = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
+
   useEffect(() => {
     if (authenticated) {
       setValue(getDefaultMarkdown());
     }
   }, [authenticated]);
 
-  // Auto-resize textarea
+  useLayoutEffect(() => {
+    syncTextareaHeight();
+  }, [value, syncTextareaHeight]);
+
   useEffect(() => {
-    const el = textareaRef.current;
-    if (el) {
-      el.style.height = "auto";
-      el.style.height = `${el.scrollHeight}px`;
-    }
-  }, [value]);
+    window.addEventListener("resize", syncTextareaHeight);
+    return () => window.removeEventListener("resize", syncTextareaHeight);
+  }, [syncTextareaHeight]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,9 +136,10 @@ const GuidePage = () => {
         </p>
         <textarea
           ref={textareaRef}
+          rows={1}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          className="w-full min-h-[400px] bg-background border border-border/60 rounded-xl p-5 text-[14px] leading-relaxed font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
+          className="w-full bg-background border border-border/60 rounded-xl p-5 text-[14px] leading-relaxed font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
           placeholder="输入 Markdown 内容..."
           style={{ overflow: "hidden" }}
         />
