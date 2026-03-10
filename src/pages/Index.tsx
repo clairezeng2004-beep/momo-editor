@@ -35,28 +35,28 @@ const TemplateSelector = ({
   onEdit: (t: CustomTemplate) => void;
   onDelete: (id: string) => void;
 }) => (
-  <div className="flex gap-2 flex-wrap">
+  <div className="flex gap-2.5 flex-wrap">
     {allTemplates.map((t) => {
       const isCustom = "isCustom" in t;
       return (
         <div key={t.id} className="relative group">
           <button
             onClick={() => onSelect(t)}
-            className={`flex flex-col items-center gap-1 rounded-lg p-2 transition-all border-2 ${
+            className={`flex flex-col items-center gap-1.5 rounded-xl p-2 transition-all border ${
               selected.id === t.id
-                ? "border-foreground shadow-md scale-105"
-                : "border-transparent hover:border-muted-foreground/30"
+                ? "border-foreground/40 bg-secondary/60 shadow-sm"
+                : "border-transparent hover:bg-secondary/40"
             }`}
           >
             <div
-              className="w-10 h-14 rounded-md shadow-sm border border-border"
+              className="w-10 h-14 rounded-lg shadow-sm border border-border/60"
               style={{ background: t.previewBg }}
             >
-              <div className="mt-2 mx-auto w-5 h-0.5 rounded" style={{ background: t.previewText }} />
-              <div className="mt-1 mx-auto w-6 h-0.5 rounded opacity-40" style={{ background: t.previewText }} />
-              <div className="mt-1 mx-auto w-4 h-0.5 rounded opacity-40" style={{ background: t.previewText }} />
+              <div className="mt-2.5 mx-auto w-5 h-0.5 rounded-full" style={{ background: t.previewText }} />
+              <div className="mt-1 mx-auto w-6 h-0.5 rounded-full opacity-40" style={{ background: t.previewText }} />
+              <div className="mt-1 mx-auto w-4 h-0.5 rounded-full opacity-40" style={{ background: t.previewText }} />
             </div>
-            <span className="text-xs text-muted-foreground">{t.name}</span>
+            <span className="text-[11px] text-muted-foreground font-medium">{t.name}</span>
           </button>
           {isCustom && (
             <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 flex gap-0.5 transition-opacity">
@@ -79,12 +79,12 @@ const TemplateSelector = ({
     })}
     <button
       onClick={onCreateNew}
-      className="flex flex-col items-center gap-1 rounded-lg p-2 transition-all border-2 border-dashed border-border hover:border-muted-foreground/30"
+      className="flex flex-col items-center gap-1.5 rounded-xl p-2 transition-all border border-dashed border-border/60 hover:bg-secondary/30"
     >
-      <div className="w-10 h-14 rounded-md border border-dashed border-border flex items-center justify-center">
+      <div className="w-10 h-14 rounded-lg border border-dashed border-border/60 flex items-center justify-center">
         <Plus className="w-4 h-4 text-muted-foreground" />
       </div>
-      <span className="text-xs text-muted-foreground">自定义</span>
+      <span className="text-[11px] text-muted-foreground font-medium">自定义</span>
     </button>
   </div>
 );
@@ -101,10 +101,10 @@ const RatioSelector = ({
       <button
         key={r.id}
         onClick={() => onSelect(r)}
-        className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+        className={`px-3.5 py-1.5 rounded-full text-[13px] transition-all ${
           selected.id === r.id
-            ? "bg-foreground text-background font-medium"
-            : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            ? "bg-foreground text-background font-medium shadow-sm"
+            : "bg-secondary/60 text-secondary-foreground hover:bg-secondary"
         }`}
       >
         {r.label}
@@ -336,20 +336,22 @@ const Index = () => {
       <section>
         <button
           onClick={() => toggleSection(id)}
-          className="w-full text-sm font-semibold mb-2 flex items-center gap-2 text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
+          className="w-full text-[13px] font-medium mb-3 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ChevronRight className={`w-3 h-3 transition-transform ${collapsed ? "" : "rotate-90"}`} />
+          <ChevronRight className={`w-3 h-3 transition-transform duration-200 ${collapsed ? "" : "rotate-90"}`} />
           <Icon className="w-3.5 h-3.5" />
           {label}
         </button>
-        {!collapsed && children}
+        <div className={`transition-all duration-200 ${collapsed ? "hidden" : ""}`}>
+          {children}
+        </div>
       </section>
     );
   };
 
   const sidebarContent = (
     <>
-      <div className="p-5 space-y-6">
+      <div className="p-5 space-y-5">
         <CollapsibleSection id="style" icon={Eye} label="样式">
           <TemplateSelector
             selected={template}
@@ -373,21 +375,21 @@ const Index = () => {
           <RatioSelector selected={ratio} onSelect={setRatio} />
         </CollapsibleSection>
 
-        <CollapsibleSection id="font" icon={Type} label={`字号 (${fontSize}px)`}>
+        <CollapsibleSection id="font" icon={Type} label={`字号 · ${fontSize}px`}>
           <input
             type="range"
             min={12}
             max={24}
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
-            className="w-full accent-foreground"
+            className="w-full accent-foreground h-1 appearance-none bg-border rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:cursor-pointer"
           />
         </CollapsibleSection>
 
         {/* Toggle editor on mobile */}
         <button
           onClick={() => setShowEditor(!showEditor)}
-          className="lg:hidden w-full flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-4 py-2.5 rounded-lg text-sm font-medium"
+          className="lg:hidden w-full flex items-center justify-center gap-2 bg-secondary/60 text-secondary-foreground px-4 py-2.5 rounded-xl text-[13px] font-medium hover:bg-secondary transition-colors"
         >
           <Edit3 className="w-4 h-4" />
           {showEditor ? "隐藏编辑器" : "显示编辑器"}
@@ -395,14 +397,14 @@ const Index = () => {
       </div>
 
       {/* Editor */}
-      <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border`}>
+      <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border/60`}>
         <div className="p-5 space-y-3">
-          <CollapsibleSection id="editor" icon={Edit3} label="Markdown 编辑">
-            <div className="flex items-center justify-end gap-1 mb-2">
+          <CollapsibleSection id="editor" icon={Edit3} label="编辑">
+            <div className="flex items-center justify-end gap-0.5 mb-2">
               <button
                 onClick={() => { history.undo(); setDirectHtml(null); }}
                 disabled={!history.canUndo}
-                className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
                 title="撤销 (Ctrl+Z)"
               >
                 <Undo2 className="w-3.5 h-3.5" />
@@ -410,7 +412,7 @@ const Index = () => {
               <button
                 onClick={() => { history.redo(); setDirectHtml(null); }}
                 disabled={!history.canRedo}
-                className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors disabled:opacity-25 disabled:cursor-not-allowed"
                 title="重做 (Ctrl+Shift+Z)"
               >
                 <Redo2 className="w-3.5 h-3.5" />
@@ -428,10 +430,16 @@ const Index = () => {
                 handleMarkdownChange(e.target.value);
                 const el = e.target;
                 el.style.height = 'auto';
-                el.style.height = `${Math.max(200, el.scrollHeight)}px`;
+                el.style.height = `${el.scrollHeight}px`;
               }}
-              className="w-full min-h-[200px] bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
+              onFocus={(e) => {
+                const el = e.target;
+                el.style.height = 'auto';
+                el.style.height = `${el.scrollHeight}px`;
+              }}
+              className="w-full min-h-[120px] bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
               placeholder="在此输入内容，直接换行即可分段..."
+              style={{ overflow: 'hidden' }}
             />
           </CollapsibleSection>
         </div>
@@ -443,11 +451,11 @@ const Index = () => {
   const mobileScale = isMobile ? Math.min(1, (window.innerWidth - 48) / CARD_WIDTH) : 1;
 
   const previewContent = (
-    <div className="flex-1 overflow-auto flex items-start justify-center p-4 lg:p-10 bg-background">
+    <div className="flex-1 overflow-auto flex items-start justify-center p-4 lg:p-10 bg-background/80">
       <div className="flex flex-col items-center gap-4 relative">
-        <p className="text-xs text-muted-foreground text-center">
-          预览 · {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
-          <span className="ml-2 opacity-60 hidden sm:inline">（可选中文字直接改色/加粗 · 超长自动分页）</span>
+        <p className="text-[11px] text-muted-foreground/70 text-center font-medium tracking-wide">
+          {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
+          <span className="ml-2 hidden sm:inline">可直接编辑预览卡片</span>
         </p>
         <div style={isMobile ? { transform: `scale(${mobileScale})`, transformOrigin: 'top center' } : undefined}>
           <PaginatedPreview
@@ -494,31 +502,31 @@ const Index = () => {
         editingTemplate={editingTemplate}
       />
       {/* Header */}
-      <header className="border-b border-border bg-card px-6 py-3 flex items-center justify-between shrink-0">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
-            <Type className="w-4 h-4 text-background" />
+          <div className="w-7 h-7 rounded-lg bg-foreground/90 flex items-center justify-center">
+            <Type className="w-3.5 h-3.5 text-background" />
           </div>
-          <h1 className="text-lg font-bold tracking-tight hidden sm:block">CardNote</h1>
+          <h1 className="text-[15px] font-semibold tracking-tight hidden sm:block text-foreground/90">CardNote</h1>
           {/* Draft selector */}
           <div className="relative" ref={draftDropdownRef}>
             <button
               onClick={() => setShowDraftList(!showDraftList)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-sm hover:bg-secondary/80 transition-colors max-w-[280px]"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50 text-[13px] hover:bg-secondary/80 transition-colors max-w-[560px]"
             >
-              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <FileText className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
               <span className="truncate">{currentDraft?.title ?? "未命名"}</span>
-              <ChevronDown className="w-3 h-3 shrink-0" />
+              <ChevronDown className="w-3 h-3 shrink-0 text-muted-foreground" />
             </button>
             {showDraftList && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-card border border-border rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
-                <div className="p-2 border-b border-border">
+              <div className="absolute top-full left-0 mt-1.5 w-72 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-lg shadow-black/5 z-50 max-h-80 overflow-y-auto">
+                <div className="p-1.5 border-b border-border/40">
                   <button
                     onClick={() => {
                       drafts.createDraft();
                       setShowDraftList(false);
                     }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-secondary transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] hover:bg-secondary/60 transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     新建草稿
@@ -528,8 +536,8 @@ const Index = () => {
                   {drafts.drafts.map((d) => (
                     <div
                       key={d.id}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm cursor-pointer group ${
-                        d.id === drafts.currentDraftId ? "bg-secondary font-medium" : "hover:bg-secondary/50"
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] cursor-pointer group transition-colors ${
+                        d.id === drafts.currentDraftId ? "bg-secondary/60 font-medium" : "hover:bg-secondary/40"
                       }`}
                       onClick={() => {
                         drafts.switchDraft(d.id);
@@ -539,7 +547,7 @@ const Index = () => {
                       <FileText className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
                       <div className="flex-1 min-w-0">
                         <div className="truncate">{d.title}</div>
-                        <div className="text-[10px] text-muted-foreground">
+                        <div className="text-[10px] text-muted-foreground/70">
                           {new Date(d.updatedAt).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </div>
                       </div>
@@ -564,16 +572,16 @@ const Index = () => {
         <button
           onClick={handleExport}
           disabled={exporting}
-          className="flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="flex items-center gap-2 bg-foreground/90 text-background px-4 py-2 rounded-xl text-[13px] font-medium hover:bg-foreground transition-colors disabled:opacity-50"
         >
-          <Download className="w-4 h-4" />
+          <Download className="w-3.5 h-3.5" />
           {exporting ? "导出中..." : "导出图片"}
         </button>
       </header>
 
       {/* Main - Desktop uses resizable panels */}
       <div className="flex-1 flex flex-col lg:hidden overflow-hidden">
-        <aside className="w-full border-b border-border bg-card overflow-y-auto shrink-0">
+        <aside className="w-full border-b border-border/50 bg-card/60 overflow-y-auto shrink-0">
           {sidebarContent}
         </aside>
         {previewContent}
@@ -582,7 +590,7 @@ const Index = () => {
       <div className="flex-1 hidden lg:flex overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-            <aside className="h-full overflow-y-auto bg-card">
+            <aside className="h-full overflow-y-auto bg-card/60">
               {sidebarContent}
             </aside>
           </ResizablePanel>
