@@ -203,7 +203,7 @@ const Index = () => {
   }, [drafts.loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentDraft = drafts.getCurrentDraft();
-  const history = useHistory(currentDraft?.markdown ?? DEFAULT_MARKDOWN);
+  const history = useHistory(currentDraft?.markdown ?? defaultMarkdown);
   const markdown = history.value;
   const [template, setTemplate] = useState(() =>
     TEMPLATES.find((t) => t.id === currentDraft?.templateId) ?? TEMPLATES[0]
