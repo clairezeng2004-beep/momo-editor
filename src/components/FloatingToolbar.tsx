@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Bold, AlignLeft, AlignCenter, AlignJustify } from "lucide-react";
+import { Bold, AlignLeft, AlignCenter, AlignJustify, Heading1, Heading2, Heading3, TextQuote, Type } from "lucide-react";
 import { getSelectedColors, type ColorItem } from "@/lib/colors";
 
 interface FloatingToolbarProps {
@@ -23,7 +23,6 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
   const toolbarRef = useRef<HTMLDivElement>(null);
   const [textColors, setTextColors] = useState<ColorItem[]>(getSelectedColors);
 
-  // Re-read colors when toolbar becomes visible (in case user changed them on /colors page)
   useEffect(() => {
     if (visible) setTextColors(getSelectedColors());
   }, [visible]);
@@ -73,13 +72,11 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
     const selection = window.getSelection();
     if (!selection || selection.isCollapsed) return;
 
-    // Get all block elements in the selection range
     const range = selection.getRangeAt(0);
     const startBlock = getBlockElement(range.startContainer);
     const endBlock = getBlockElement(range.endContainer);
 
     if (startBlock) {
-      // Collect all blocks between start and end
       const blocks: HTMLElement[] = [];
       let current: HTMLElement | null = startBlock;
       while (current) {
@@ -96,12 +93,49 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
     onContentChange?.();
   };
 
+  const applyBlockFormat = (e: React.MouseEvent, tagName: string) => {
+    e.preventDefault();
+    const selection = window.getSelection();
+    if (!selection) return;
+
+    const range = selection.getRangeAt(0);
+    const block = getBlockElement(range.startContainer);
+    if (!block || !block.parentElement) return;
+
+    // Save selection text
+    const savedContent = block.innerHTML;
+    const currentTag = block.tagName.toUpperCase();
+
+    // If already the target tag, revert to P
+    const targetTag = currentTag === tagName.toUpperCase() ? "P" : tagName.toUpperCase();
+
+    const newEl = document.createElement(targetTag);
+    newEl.innerHTML = savedContent;
+
+    // Copy text-align if set
+    if (block.style.textAlign) {
+      newEl.style.textAlign = block.style.textAlign;
+    }
+
+    block.parentElement.replaceChild(newEl, block);
+
+    // Restore selection inside new element
+    const newRange = document.createRange();
+    if (newEl.firstChild) {
+      newRange.selectNodeContents(newEl);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+    }
+
+    onContentChange?.();
+  };
+
   if (!visible) return null;
 
   return (
     <div
       ref={toolbarRef}
-      className="absolute z-50 flex items-center gap-1 bg-card border border-border rounded-lg shadow-lg px-2 py-1.5"
+      className="absolute z-50 flex items-center gap-0.5 bg-card/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-lg px-2 py-1.5"
       style={{
         top: position.top,
         left: position.left,
@@ -109,14 +143,52 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
       }}
       onMouseDown={(e) => e.preventDefault()}
     >
+      {/* Block format */}
+      <button
+        onMouseDown={(e) => applyBlockFormat(e, "H1")}
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors"
+        title="一级标题"
+      >
+        <Heading1 className="w-3.5 h-3.5" />
+      </button>
+      <button
+        onMouseDown={(e) => applyBlockFormat(e, "H2")}
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors"
+        title="二级标题"
+      >
+        <Heading2 className="w-3.5 h-3.5" />
+      </button>
+      <button
+        onMouseDown={(e) => applyBlockFormat(e, "H3")}
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors"
+        title="三级标题"
+      >
+        <Heading3 className="w-3.5 h-3.5" />
+      </button>
+      <button
+        onMouseDown={(e) => applyBlockFormat(e, "P")}
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors"
+        title="正文"
+      >
+        <Type className="w-3.5 h-3.5" />
+      </button>
+      <button
+        onMouseDown={(e) => applyBlockFormat(e, "BLOCKQUOTE")}
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors"
+        title="引用"
+      >
+        <TextQuote className="w-3.5 h-3.5" />
+      </button>
+      <div className="w-px h-4 bg-border/60 mx-0.5" />
+      {/* Inline format */}
       <button
         onMouseDown={applyBold}
-        className="w-7 h-7 rounded flex items-center justify-center hover:bg-secondary transition-colors"
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors"
         title="加粗"
       >
         <Bold className="w-3.5 h-3.5" />
       </button>
-      <div className="w-px h-4 bg-border mx-0.5" />
+      <div className="w-px h-4 bg-border/60 mx-0.5" />
       {textColors.map((c) => (
         <button
           key={c.color}
@@ -130,24 +202,24 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
           />
         </button>
       ))}
-      <div className="w-px h-4 bg-border mx-0.5" />
+      <div className="w-px h-4 bg-border/60 mx-0.5" />
       <button
         onMouseDown={(e) => applyAlign(e, "left")}
-        className="w-7 h-7 rounded flex items-center justify-center hover:bg-secondary transition-colors"
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors"
         title="左对齐"
       >
         <AlignLeft className="w-3.5 h-3.5" />
       </button>
       <button
         onMouseDown={(e) => applyAlign(e, "center")}
-        className="w-7 h-7 rounded flex items-center justify-center hover:bg-secondary transition-colors"
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors"
         title="居中"
       >
         <AlignCenter className="w-3.5 h-3.5" />
       </button>
       <button
         onMouseDown={(e) => applyAlign(e, "justify")}
-        className="w-7 h-7 rounded flex items-center justify-center hover:bg-secondary transition-colors"
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors"
         title="两端对齐"
       >
         <AlignJustify className="w-3.5 h-3.5" />
