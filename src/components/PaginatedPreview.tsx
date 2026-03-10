@@ -8,6 +8,7 @@ interface PaginatedPreviewProps {
   fontSize: number;
   textAlign: string;
   templateClassName: string;
+  templateBackground: string;
   onContentChange: () => void;
   contentRef: React.RefObject<HTMLDivElement>;
   directHtml: string | null;
@@ -23,6 +24,7 @@ const PaginatedPreview = ({
   fontSize,
   textAlign,
   templateClassName,
+  templateBackground,
   onContentChange,
   contentRef,
   directHtml,
@@ -100,6 +102,7 @@ const PaginatedPreview = ({
                 overflow: "hidden",
                 display: "flex",
                 flexDirection: "column",
+                background: templateBackground,
               }}
             >
               {idx === 0 && (

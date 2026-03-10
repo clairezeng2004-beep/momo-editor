@@ -215,7 +215,7 @@ const Index = () => {
     }
   }, []);
 
-  // Keyboard shortcuts for undo/redo
+  // Keyboard shortcuts for undo/redo and bold
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "z") {
@@ -229,10 +229,36 @@ const Index = () => {
           setDirectHtml(null);
         }
       }
+      // Ctrl+B / Cmd+B for bold
+      if ((e.metaKey || e.ctrlKey) && e.key === "b") {
+        e.preventDefault();
+        const ta = textareaRef.current;
+        // If focus is inside the preview (contentEditable), use execCommand
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.getAttribute("contenteditable") === "true") {
+          document.execCommand("bold");
+          handleContentChange();
+          return;
+        }
+        // If focus is in textarea, wrap selection with **
+        if (ta && document.activeElement === ta) {
+          const start = ta.selectionStart;
+          const end = ta.selectionEnd;
+          if (start !== end) {
+            const selected = markdown.slice(start, end);
+            const newText = markdown.slice(0, start) + "**" + selected + "**" + markdown.slice(end);
+            handleMarkdownChange(newText);
+            requestAnimationFrame(() => {
+              ta.focus();
+              ta.setSelectionRange(start + 2, end + 2);
+            });
+          }
+        }
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [history]);
+  }, [history, markdown, handleMarkdownChange, handleContentChange]);
 
   const handleExport = async () => {
     // Export all page cards
@@ -372,6 +398,7 @@ const Index = () => {
           fontSize={fontSize}
           textAlign={textAlign}
           templateClassName={template.className}
+          templateBackground={template.background}
           onContentChange={handleContentChange}
           contentRef={contentRef}
           directHtml={directHtml}

@@ -4,6 +4,8 @@ export interface TemplateStyle {
   className: string;
   previewBg: string;
   previewText: string;
+  /** Inline background style applied to the card for accurate export */
+  background: string;
 }
 
 export const TEMPLATES: TemplateStyle[] = [
@@ -13,6 +15,7 @@ export const TEMPLATES: TemplateStyle[] = [
     className: "template-apple-notes",
     previewBg: "#f5f5f4",
     previewText: "#555555",
+    background: "#f5f5f4",
   },
   {
     id: "clean",
@@ -20,6 +23,7 @@ export const TEMPLATES: TemplateStyle[] = [
     className: "template-clean",
     previewBg: "#f7f7f6",
     previewText: "#555555",
+    background: "#f7f7f6",
   },
   {
     id: "warm",
@@ -27,6 +31,7 @@ export const TEMPLATES: TemplateStyle[] = [
     className: "template-warm",
     previewBg: "#fef9f0",
     previewText: "#8b6914",
+    background: "linear-gradient(180deg, #fef9f0 0%, #fdf6e9 100%)",
   },
   {
     id: "ink",
@@ -34,6 +39,7 @@ export const TEMPLATES: TemplateStyle[] = [
     className: "template-ink",
     previewBg: "#1a1a2e",
     previewText: "#7ec8e3",
+    background: "#1a1a2e",
   },
   {
     id: "mint",
@@ -41,6 +47,7 @@ export const TEMPLATES: TemplateStyle[] = [
     className: "template-mint",
     previewBg: "#f0faf5",
     previewText: "#1a7a4a",
+    background: "linear-gradient(180deg, #f0faf5 0%, #e8f5ee 100%)",
   },
   {
     id: "rose",
@@ -48,6 +55,7 @@ export const TEMPLATES: TemplateStyle[] = [
     className: "template-rose",
     previewBg: "#fef5f5",
     previewText: "#c44569",
+    background: "linear-gradient(180deg, #fef5f5 0%, #fdeef0 100%)",
   },
 ];
 

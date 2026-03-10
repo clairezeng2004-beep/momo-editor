@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Check, Plus, X, Eye } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Check, Plus, X, Eye, Upload, Pipette } from "lucide-react";
 import { COLOR_PALETTE, type ColorItem } from "@/lib/colors";
 
 const SAMPLE_PARAGRAPHS = [
@@ -21,6 +21,9 @@ const loadFromStorage = <T,>(key: string, fallback: T): T => {
   }
 };
 
+const rgbToHex = (r: number, g: number, b: number) =>
+  "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+
 const ColorPlayground = () => {
   const [selected, setSelected] = useState<Set<string>>(() =>
     new Set(loadFromStorage<string[]>(STORAGE_KEY, ["#2B4C7E", "#D94F4F", "#2A7A4B", "#7B4EA3", "#C7742E", "#4A5E6D"]))
@@ -34,6 +37,13 @@ const ColorPlayground = () => {
   const [newColor, setNewColor] = useState("#5A7D9A");
   const [newLabel, setNewLabel] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // Eyedropper state
+  const [eyedropperImage, setEyedropperImage] = useState<string | null>(null);
+  const [pickedColor, setPickedColor] = useState<string | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...selected]));
@@ -84,6 +94,56 @@ const ColorPlayground = () => {
     setCustomColors((prev) => prev.filter((c) => c.color !== color));
     setSelected((prev) => { const n = new Set(prev); n.delete(color); return n; });
     setComparing((prev) => { const n = new Set(prev); n.delete(color); return n; });
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setEyedropperImage(reader.result as string);
+      setPickedColor(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCanvasClick = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = Math.floor((e.clientX - rect.left) * scaleX);
+      const y = Math.floor((e.clientY - rect.top) * scaleY);
+      const pixel = ctx.getImageData(x, y, 1, 1).data;
+      const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+      setPickedColor(hex);
+      setNewColor(hex);
+    },
+    []
+  );
+
+  const handleImageLoad = useCallback(() => {
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img) return;
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0);
+  }, []);
+
+  const addPickedColor = () => {
+    if (!pickedColor) return;
+    const label = newLabel.trim() || pickedColor;
+    setCustomColors((prev) => [...prev, { label, color: pickedColor }]);
+    setSelected((prev) => new Set([...prev, pickedColor]));
+    setPickedColor(null);
+    setNewLabel("");
   };
 
   const allColors = [...Object.values(COLOR_PALETTE).flat(), ...customColors];
@@ -256,7 +316,79 @@ const ColorPlayground = () => {
           )}
         </div>
 
-        {/* Color palette categories */}
+        {/* Eyedropper - pick color from image */}
+        <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <Pipette className="w-3.5 h-3.5" /> 从图片取色
+            </h2>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              上传图片
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </div>
+
+          {eyedropperImage ? (
+            <div className="space-y-3">
+              <div className="relative rounded-lg overflow-hidden border border-border cursor-crosshair">
+                {/* Hidden img for loading */}
+                <img
+                  ref={imgRef}
+                  src={eyedropperImage}
+                  onLoad={handleImageLoad}
+                  className="hidden"
+                  alt=""
+                />
+                <canvas
+                  ref={canvasRef}
+                  onClick={handleCanvasClick}
+                  className="w-full max-h-[300px] object-contain"
+                  style={{ imageRendering: "auto" }}
+                />
+              </div>
+              {pickedColor && (
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div
+                    className="w-10 h-10 rounded-lg border border-border shadow-sm"
+                    style={{ background: pickedColor }}
+                  />
+                  <span className="text-sm font-mono">{pickedColor}</span>
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="text"
+                      value={newLabel}
+                      onChange={(e) => setNewLabel(e.target.value)}
+                      className="w-28 px-2 py-1 text-sm rounded-md bg-secondary text-foreground border border-border"
+                      placeholder="颜色名称"
+                    />
+                  </div>
+                  <button
+                    onClick={addPickedColor}
+                    className="px-4 py-1.5 rounded-md text-sm font-medium bg-foreground text-background hover:opacity-90 transition-opacity"
+                  >
+                    添加此颜色
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              上传一张图片，点击图片上任意位置即可提取颜色
+            </p>
+          )}
+        </div>
+
+
         {Object.entries(COLOR_PALETTE).map(([category, colors]) => (
           <div key={category} className="space-y-3">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
