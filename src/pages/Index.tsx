@@ -6,6 +6,7 @@ import type { TemplateStyle, AspectRatio } from "@/lib/templates";
 import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import FormatToolbar from "@/components/FormatToolbar";
+import FloatingToolbar from "@/components/FloatingToolbar";
 import PaginatedPreview from "@/components/PaginatedPreview";
 import TemplateEditor from "@/components/TemplateEditor";
 import { useHistory } from "@/hooks/use-history";
@@ -454,27 +455,32 @@ const Index = () => {
   const mobileScale = isMobile ? Math.min(1, (window.innerWidth - 48) / CARD_WIDTH) : 1;
 
   const previewContent = (
-    <div className="flex-1 overflow-auto flex items-start justify-center p-4 lg:p-10 bg-background/80">
-      <div className="flex flex-col items-center gap-4 relative">
-        <p className="text-[11px] text-muted-foreground/70 text-center font-medium tracking-wide">
-          {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
-          <span className="ml-2 hidden sm:inline">可直接编辑预览卡片</span>
-        </p>
-        <div style={isMobile ? { transform: `scale(${mobileScale})`, transformOrigin: 'top center' } : undefined}>
-          <PaginatedPreview
-            html={renderedHtml}
-            cardWidth={CARD_WIDTH}
-            cardHeight={cardHeight}
-            fontSize={fontSize}
-            textAlign={textAlign}
-            templateClassName={template.className}
-            templateBackground={template.background}
-            onContentChange={handleContentChange}
-            contentRef={contentRef}
-            directHtml={directHtml}
-            markdown={markdown}
-          />
-        </div>
+    <div className="flex-1 overflow-auto flex flex-col items-center p-4 lg:p-10 bg-background/80">
+      {/* Fixed toolbar above preview */}
+      <div className="sticky top-0 z-10 mb-3 w-full max-w-lg">
+        <FloatingToolbar
+          containerRef={contentRef}
+          onContentChange={handleContentChange}
+        />
+      </div>
+      <p className="text-[11px] text-muted-foreground/70 text-center font-medium tracking-wide mb-4">
+        {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
+        <span className="ml-2 hidden sm:inline">选中文字使用上方工具栏</span>
+      </p>
+      <div style={isMobile ? { transform: `scale(${mobileScale})`, transformOrigin: 'top center' } : undefined}>
+        <PaginatedPreview
+          html={renderedHtml}
+          cardWidth={CARD_WIDTH}
+          cardHeight={cardHeight}
+          fontSize={fontSize}
+          textAlign={textAlign}
+          templateClassName={template.className}
+          templateBackground={template.background}
+          onContentChange={handleContentChange}
+          contentRef={contentRef}
+          directHtml={directHtml}
+          markdown={markdown}
+        />
       </div>
     </div>
   );
@@ -505,7 +511,7 @@ const Index = () => {
         editingTemplate={editingTemplate}
       />
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0 relative z-[200]">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-foreground/90 flex items-center justify-center">
             <Type className="w-3.5 h-3.5 text-background" />

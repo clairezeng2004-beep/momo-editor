@@ -1,5 +1,4 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import FloatingToolbar from "@/components/FloatingToolbar";
 
 interface PaginatedPreviewProps {
   html: string;
@@ -105,12 +104,6 @@ const PaginatedPreview = ({
                 background: templateBackground,
               }}
             >
-              {idx === 0 && (
-                <FloatingToolbar
-                  containerRef={{ current: cardRefs.current[0] } as React.RefObject<HTMLDivElement>}
-                  onContentChange={onContentChange}
-                />
-              )}
               {/* Content viewport */}
               <div
                 style={{
