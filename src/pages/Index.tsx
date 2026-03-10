@@ -581,7 +581,7 @@ const Index = () => {
 
       {/* Main - Desktop uses resizable panels */}
       <div className="flex-1 flex flex-col lg:hidden overflow-hidden">
-        <aside className="w-full border-b border-border bg-card overflow-y-auto shrink-0">
+        <aside className="w-full border-b border-border/50 bg-card/60 overflow-y-auto shrink-0">
           {sidebarContent}
         </aside>
         {previewContent}
@@ -590,7 +590,7 @@ const Index = () => {
       <div className="flex-1 hidden lg:flex overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-            <aside className="h-full overflow-y-auto bg-card">
+            <aside className="h-full overflow-y-auto bg-card/60">
               {sidebarContent}
             </aside>
           </ResizablePanel>
