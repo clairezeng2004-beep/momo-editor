@@ -13,7 +13,7 @@ import FloatingToolbar from "@/components/FloatingToolbar";
 import PaginatedPreview from "@/components/PaginatedPreview";
 import TemplateEditor from "@/components/TemplateEditor";
 import { useHistory } from "@/hooks/use-history";
-import { useDrafts } from "@/hooks/use-drafts";
+import { useCloudDrafts } from "@/hooks/use-cloud-drafts";
 import { useCustomTemplates } from "@/hooks/use-custom-templates";
 import type { CustomTemplate } from "@/hooks/use-custom-templates";
 import {
