@@ -24,6 +24,7 @@ const PaginatedPreview = ({
   fontSize,
   textAlign,
   templateClassName,
+  templateBackground,
   onContentChange,
   contentRef,
   directHtml,
