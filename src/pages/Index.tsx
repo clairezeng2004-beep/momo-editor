@@ -269,6 +269,9 @@ const Index = () => {
       const scale = 3;
       for (let i = 0; i < pageElements.length; i++) {
         const el = pageElements[i] as HTMLElement;
+        // Warmup pass to ensure fonts/images are loaded
+        await toPng(el, { pixelRatio: 1, cacheBust: true });
+        await new Promise(r => setTimeout(r, 100));
         const dataUrl = await toPng(el, {
           pixelRatio: scale,
           cacheBust: true,
@@ -278,7 +281,7 @@ const Index = () => {
         link.href = dataUrl;
         link.click();
         // Small delay between downloads
-        if (pageElements.length > 1) await new Promise(r => setTimeout(r, 300));
+        if (pageElements.length > 1) await new Promise(r => setTimeout(r, 500));
       }
     } catch (e) {
       console.error(e);
