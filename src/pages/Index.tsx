@@ -391,7 +391,7 @@ const Index = () => {
           </div>
           <h1 className="text-lg font-bold tracking-tight hidden sm:block">文字卡片生成器</h1>
           {/* Draft selector */}
-          <div className="relative">
+          <div className="relative" ref={draftDropdownRef}>
             <button
               onClick={() => setShowDraftList(!showDraftList)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-sm hover:bg-secondary/80 transition-colors max-w-[180px]"
