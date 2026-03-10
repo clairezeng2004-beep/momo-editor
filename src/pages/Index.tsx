@@ -389,7 +389,7 @@ const Index = () => {
           <RatioSelector selected={ratio} onSelect={setRatio} />
         </CollapsibleSection>
 
-        <CollapsibleSection id="font" icon={Type} label={`字号 · ${fontSize}px`}>
+        <CollapsibleSection id="font" icon={Type} label={`字号 · ${fontSize}px`} collapsed={collapsedSections["font"] ?? false} onToggle={toggleSection}>
           <input
             type="range"
             min={12}
