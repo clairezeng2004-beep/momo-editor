@@ -814,7 +814,7 @@ const Index = () => {
                 <Menu className="w-4.5 h-4.5 text-foreground/80" />
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[272px] max-w-[82vw] p-0 overflow-y-auto sm:w-[284px]">
+            <SheetContent side="left" className="w-[220px] max-w-[62vw] p-0 overflow-y-auto sm:w-[240px] sm:max-w-[55vw]">
               <div className="pt-12">
                 {settingsContent}
                 {mobileColorPicker}
