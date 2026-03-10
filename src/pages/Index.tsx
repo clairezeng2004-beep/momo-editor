@@ -678,14 +678,23 @@ const Index = () => {
             )}
           </div>
         </div>
-        <button
-          onClick={handleExport}
-          disabled={exporting}
-          className="flex items-center gap-2 bg-foreground/90 text-background px-4 py-2 rounded-xl text-[13px] font-medium hover:bg-foreground transition-colors disabled:opacity-50"
-        >
-          <Download className="w-3.5 h-3.5" />
-          {exporting ? "导出中..." : "导出图片"}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 bg-foreground/90 text-background px-3 sm:px-4 py-2 rounded-xl text-[13px] font-medium hover:bg-foreground transition-colors disabled:opacity-50"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{exporting ? "导出中..." : "导出图片"}</span>
+          </button>
+          <button
+            onClick={signOut}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+            title="退出登录"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </header>
 
       {/* Main - Desktop uses resizable panels */}
