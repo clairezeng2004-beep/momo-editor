@@ -589,6 +589,20 @@ const Index = () => {
       {/* Header */}
       <header className="sticky top-0 border-b border-border/50 bg-card/95 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0 z-[200]">
         <div className="flex items-center gap-3">
+          {/* Menu button - opens settings sheet */}
+          <Sheet open={showSettingsSheet} onOpenChange={setShowSettingsSheet}>
+            <SheetTrigger asChild>
+              <button className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center hover:bg-secondary/60 transition-colors">
+                <Menu className="w-4.5 h-4.5 text-foreground/80" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] p-0 overflow-y-auto">
+              <div className="pt-12">
+                {settingsContent}
+                {editorContent}
+              </div>
+            </SheetContent>
+          </Sheet>
           <img src={momoLogo} alt="Momo Editor" className="w-7 h-7 rounded-lg object-cover" />
           <h1 className="text-[15px] font-semibold tracking-tight hidden sm:block text-foreground/90">Momo Editor</h1>
           {/* Draft selector */}
