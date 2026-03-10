@@ -7,12 +7,12 @@ export interface ColorItem {
 }
 
 export const DEFAULT_COLORS: ColorItem[] = [
-  { label: "深蓝", color: "#2B4C7E" },
-  { label: "珊瑚红", color: "#D94F4F" },
-  { label: "森林绿", color: "#2A7A4B" },
-  { label: "雅紫", color: "#7B4EA3" },
-  { label: "琥珀橙", color: "#C7742E" },
-  { label: "石板灰", color: "#4A5E6D" },
+  { label: "红", color: "#FF3B30" },
+  { label: "橙", color: "#FF9500" },
+  { label: "绿", color: "#34C759" },
+  { label: "蓝", color: "#007AFF" },
+  { label: "紫", color: "#AF52DE" },
+  { label: "墨黑", color: "#1C1C1E" },
 ];
 
 // Apple-style color palette, each row sorted light → dark
