@@ -35,8 +35,11 @@ const PaginatedPreview = ({
   const [totalPages, setTotalPages] = useState(1);
   const isEditingRef = useRef(false);
 
+  const lineHeight = fontSize * 2.0; // matches line-height: 2.0
   const padding = { x: fontSize * 1.6, y: fontSize * 1.8 };
-  const contentHeight = cardHeight - padding.y * 2 - FOOTER_HEIGHT;
+  const rawContentHeight = cardHeight - padding.y * 2 - FOOTER_HEIGHT;
+  // Snap content height to a whole number of lines to prevent half-line clipping
+  const contentHeight = Math.floor(rawContentHeight / lineHeight) * lineHeight;
 
   const paginate = useCallback(() => {
     const container = measureRef.current;
