@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback, useLayoutEffect } from "react";
 import { DEFAULT_MARKDOWN as BUILTIN_DEFAULT } from "@/lib/templates";
-import { getDefaultMarkdown, setDefaultMarkdown, resetDefaultMarkdown } from "@/components/DefaultMarkdownEditor";
+import { fetchDefaultMarkdown, setDefaultMarkdownCloud, resetDefaultMarkdown } from "@/components/DefaultMarkdownEditor";
 import { ArrowLeft, RotateCcw, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const ADMIN_PASSWORD = "Zzy123456";
 
@@ -24,7 +25,7 @@ const GuidePage = () => {
 
   useEffect(() => {
     if (authenticated) {
-      setValue(getDefaultMarkdown());
+      fetchDefaultMarkdown().then(setValue);
     }
   }, [authenticated]);
 
@@ -47,14 +48,16 @@ const GuidePage = () => {
     }
   };
 
-  const handleSave = () => {
-    setDefaultMarkdown(value);
-    toast.success("默认文本已保存");
+  const handleSave = async () => {
+    await setDefaultMarkdownCloud(value);
+    toast.success("默认文本已保存到云端");
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
     setValue(BUILTIN_DEFAULT);
     resetDefaultMarkdown();
+    // Also clear cloud
+    await supabase.from("site_settings").delete().eq("key", "default_markdown");
     toast.success("已恢复为内置默认文本");
   };
 

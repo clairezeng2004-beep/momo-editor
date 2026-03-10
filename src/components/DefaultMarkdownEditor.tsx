@@ -7,15 +7,45 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { DEFAULT_MARKDOWN as BUILTIN_DEFAULT } from "@/lib/templates";
+import { supabase } from "@/integrations/supabase/client";
 
 const STORAGE_KEY = "card-maker-default-markdown";
+const SETTINGS_KEY = "default_markdown";
 
+/** Fetch default markdown from cloud, fallback to localStorage then builtin */
+export async function fetchDefaultMarkdown(): Promise<string> {
+  try {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", SETTINGS_KEY)
+      .maybeSingle();
+    if (data?.value) return data.value;
+  } catch {}
+  // Fallback to localStorage
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved !== null) return saved;
+  } catch {}
+  return BUILTIN_DEFAULT;
+}
+
+/** Sync getter (localStorage only, for backward compat) */
 export function getDefaultMarkdown(): string {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved !== null) return saved;
   } catch {}
   return BUILTIN_DEFAULT;
+}
+
+/** Save default markdown to both cloud and localStorage */
+export async function setDefaultMarkdownCloud(value: string) {
+  localStorage.setItem(STORAGE_KEY, value);
+  await supabase.from("site_settings").upsert(
+    { key: SETTINGS_KEY, value, updated_at: new Date().toISOString() },
+    { onConflict: "key" }
+  );
 }
 
 export function setDefaultMarkdown(value: string) {
@@ -38,12 +68,12 @@ const DefaultMarkdownEditor = ({ open, onClose, onSave }: Props) => {
 
   useEffect(() => {
     if (open) {
-      setValue(getDefaultMarkdown());
+      fetchDefaultMarkdown().then(setValue);
     }
   }, [open]);
 
-  const handleSave = () => {
-    setDefaultMarkdown(value);
+  const handleSave = async () => {
+    await setDefaultMarkdownCloud(value);
     onSave(value);
     onClose();
   };
