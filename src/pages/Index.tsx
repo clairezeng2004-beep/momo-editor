@@ -263,7 +263,8 @@ const Index = () => {
     return () => window.removeEventListener("resize", syncTextareaHeight);
   }, [syncTextareaHeight]);
 
-  const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
+  const isLongRatio = ratio.id === "long";
+  const cardHeight = isLongRatio ? (CARD_WIDTH / 3) * 4 : (CARD_WIDTH / ratio.width) * ratio.height;
 
   // Preprocess: single newline → double newline for paragraph breaks
   // But preserve special markdown lines (headings, lists, blockquotes, hr, code fences)
