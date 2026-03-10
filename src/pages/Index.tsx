@@ -5,7 +5,7 @@ import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
 import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2 } from "lucide-react";
 import FormatToolbar from "@/components/FormatToolbar";
-import FloatingToolbar from "@/components/FloatingToolbar";
+import PaginatedPreview from "@/components/PaginatedPreview";
 import { useHistory } from "@/hooks/use-history";
 import {
   ResizablePanelGroup,
