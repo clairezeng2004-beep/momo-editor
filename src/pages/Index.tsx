@@ -449,6 +449,12 @@ const Index = () => {
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
 
+  useEffect(() => {
+    if (showSettingsSheet) {
+      requestAnimationFrame(syncTextareaHeight);
+    }
+  }, [showSettingsSheet, syncTextareaHeight]);
+
   const rgbToHex = (r: number, g: number, b: number) =>
     "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
 
