@@ -230,6 +230,7 @@ const Index = () => {
                 padding: `${fontSize * 2.2}px ${fontSize * 1.8}px`,
                 borderRadius: 0,
                 boxSizing: "border-box",
+                textAlign: textAlign,
               }}
             >
               <div
