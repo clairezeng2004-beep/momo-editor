@@ -35,28 +35,28 @@ const TemplateSelector = ({
   onEdit: (t: CustomTemplate) => void;
   onDelete: (id: string) => void;
 }) => (
-  <div className="flex gap-2 flex-wrap">
+  <div className="flex gap-2.5 flex-wrap">
     {allTemplates.map((t) => {
       const isCustom = "isCustom" in t;
       return (
         <div key={t.id} className="relative group">
           <button
             onClick={() => onSelect(t)}
-            className={`flex flex-col items-center gap-1 rounded-lg p-2 transition-all border-2 ${
+            className={`flex flex-col items-center gap-1.5 rounded-xl p-2 transition-all border ${
               selected.id === t.id
-                ? "border-foreground shadow-md scale-105"
-                : "border-transparent hover:border-muted-foreground/30"
+                ? "border-foreground/40 bg-secondary/60 shadow-sm"
+                : "border-transparent hover:bg-secondary/40"
             }`}
           >
             <div
-              className="w-10 h-14 rounded-md shadow-sm border border-border"
+              className="w-10 h-14 rounded-lg shadow-sm border border-border/60"
               style={{ background: t.previewBg }}
             >
-              <div className="mt-2 mx-auto w-5 h-0.5 rounded" style={{ background: t.previewText }} />
-              <div className="mt-1 mx-auto w-6 h-0.5 rounded opacity-40" style={{ background: t.previewText }} />
-              <div className="mt-1 mx-auto w-4 h-0.5 rounded opacity-40" style={{ background: t.previewText }} />
+              <div className="mt-2.5 mx-auto w-5 h-0.5 rounded-full" style={{ background: t.previewText }} />
+              <div className="mt-1 mx-auto w-6 h-0.5 rounded-full opacity-40" style={{ background: t.previewText }} />
+              <div className="mt-1 mx-auto w-4 h-0.5 rounded-full opacity-40" style={{ background: t.previewText }} />
             </div>
-            <span className="text-xs text-muted-foreground">{t.name}</span>
+            <span className="text-[11px] text-muted-foreground font-medium">{t.name}</span>
           </button>
           {isCustom && (
             <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 flex gap-0.5 transition-opacity">
@@ -79,12 +79,12 @@ const TemplateSelector = ({
     })}
     <button
       onClick={onCreateNew}
-      className="flex flex-col items-center gap-1 rounded-lg p-2 transition-all border-2 border-dashed border-border hover:border-muted-foreground/30"
+      className="flex flex-col items-center gap-1.5 rounded-xl p-2 transition-all border border-dashed border-border/60 hover:bg-secondary/30"
     >
-      <div className="w-10 h-14 rounded-md border border-dashed border-border flex items-center justify-center">
+      <div className="w-10 h-14 rounded-lg border border-dashed border-border/60 flex items-center justify-center">
         <Plus className="w-4 h-4 text-muted-foreground" />
       </div>
-      <span className="text-xs text-muted-foreground">自定义</span>
+      <span className="text-[11px] text-muted-foreground font-medium">自定义</span>
     </button>
   </div>
 );
