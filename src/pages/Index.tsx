@@ -428,6 +428,14 @@ const Index = () => {
     }
   };
 
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground text-sm">加载中...</div>
+      </div>
+    );
+  }
+
   const renderedHtml = directHtml ?? getHtml();
 
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false, style: true, ratio: true, font: true });
