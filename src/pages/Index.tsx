@@ -5,7 +5,7 @@ import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS } from "@/lib/templates";
 import { COLOR_PALETTE } from "@/lib/colors";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
-import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight, Menu, LogOut, Upload, Pipette, Settings2 } from "lucide-react";
+import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight, Menu, LogOut, Upload, Pipette } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +13,7 @@ import FormatToolbar from "@/components/FormatToolbar";
 import FloatingToolbar from "@/components/FloatingToolbar";
 import PaginatedPreview from "@/components/PaginatedPreview";
 import TemplateEditor from "@/components/TemplateEditor";
-import DefaultMarkdownEditor, { getDefaultMarkdown } from "@/components/DefaultMarkdownEditor";
+import { getDefaultMarkdown } from "@/components/DefaultMarkdownEditor";
 import { useHistory } from "@/hooks/use-history";
 import { useCloudDrafts } from "@/hooks/use-cloud-drafts";
 import { useCustomTemplates } from "@/hooks/use-custom-templates";
@@ -164,7 +164,7 @@ const Index = () => {
   const isMobile = useIsMobile();
   const [showDraftList, setShowDraftList] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
-  const [showDefaultEditor, setShowDefaultEditor] = useState(false);
+  
   const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
   const draftDropdownRef = useRef<HTMLDivElement>(null);
   const eyedropperFileRef = useRef<HTMLInputElement>(null);
@@ -531,16 +531,9 @@ const Index = () => {
           className="w-full accent-foreground h-1 appearance-none bg-border rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:cursor-pointer"
         />
       </CollapsibleSection>
-
-      <button
-        onClick={() => setShowDefaultEditor(true)}
-        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
-      >
-        <Settings2 className="w-3.5 h-3.5" />
-        编辑默认文本
-      </button>
     </div>
   );
+
 
   const editorContent = (
     <div className="border-t border-border/60">
@@ -738,11 +731,6 @@ const Index = () => {
           }
         }}
         editingTemplate={editingTemplate}
-      />
-      <DefaultMarkdownEditor
-        open={showDefaultEditor}
-        onClose={() => setShowDefaultEditor(false)}
-        onSave={() => {}}
       />
       {/* Header */}
       <header className="sticky top-0 border-b border-border/50 bg-card/95 backdrop-blur-xl px-3 sm:px-5 py-2.5 flex items-center justify-between shrink-0 z-[200]">

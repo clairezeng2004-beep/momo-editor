@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import GuidePage from "./pages/GuidePage.tsx";
 import ColorPlayground from "./pages/ColorPlayground.tsx";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/guide" element={<GuidePage />} />
             <Route path="/colors" element={<ColorPlayground />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
