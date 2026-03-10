@@ -281,10 +281,5 @@
 
 .template-clean .markdown-body h1,
 .template-clean .markdown-body h2 {
-  color: #3a3a3a;
-}
-
-.template-clean .markdown-body strong,
-.template-apple-notes .markdown-body strong {
-  color: #3a3a3a;
+  color: #3d3d3d;
 }
