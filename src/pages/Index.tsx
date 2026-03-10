@@ -3,11 +3,19 @@ import { toPng } from "html-to-image";
 import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
-import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown } from "lucide-react";
+import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil } from "lucide-react";
 import FormatToolbar from "@/components/FormatToolbar";
 import PaginatedPreview from "@/components/PaginatedPreview";
+import TemplateEditor from "@/components/TemplateEditor";
 import { useHistory } from "@/hooks/use-history";
 import { useDrafts } from "@/hooks/use-drafts";
+import { useCustomTemplates } from "@/hooks/use-custom-templates";
+import type { CustomTemplate } from "@/hooks/use-custom-templates";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import {
   ResizablePanelGroup,
   ResizablePanel,
