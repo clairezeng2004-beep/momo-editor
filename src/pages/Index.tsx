@@ -606,10 +606,10 @@ const Index = () => {
           <img src={momoLogo} alt="Momo Editor" className="w-7 h-7 rounded-lg object-cover" />
           <h1 className="text-[15px] font-semibold tracking-tight hidden sm:block text-foreground/90">Momo Editor</h1>
           {/* Draft selector */}
-          <div className="relative" ref={draftDropdownRef}>
+          <div className="relative min-w-0 flex-1" ref={draftDropdownRef}>
             <button
               onClick={() => setShowDraftList(!showDraftList)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50 text-[13px] hover:bg-secondary/80 transition-colors max-w-[560px]"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50 text-[13px] hover:bg-secondary/80 transition-colors max-w-full w-full"
             >
               <FileText className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
               <span className="truncate">{currentDraft?.title ?? "未命名"}</span>
