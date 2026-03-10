@@ -531,6 +531,8 @@ const Index = () => {
           className="w-full accent-foreground h-1 appearance-none bg-border rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:cursor-pointer"
         />
       </CollapsibleSection>
+    </div>
+  );
 
 
   const editorContent = (
