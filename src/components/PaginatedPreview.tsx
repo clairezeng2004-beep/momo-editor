@@ -134,6 +134,8 @@ const PaginatedPreview = ({
                 display: "flex",
                 flexDirection: "column",
                 background: templateBackground,
+                wordBreak: "break-word",
+                overflowWrap: "break-word",
               }}
             >
               {/* Content viewport */}

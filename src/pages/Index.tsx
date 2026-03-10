@@ -619,7 +619,7 @@ const Index = () => {
             <SheetContent side="left" className="w-[300px] p-0 overflow-y-auto">
               <div className="pt-12">
                 {settingsContent}
-                {editorContent}
+                {mobileColorPicker}
               </div>
             </SheetContent>
           </Sheet>
