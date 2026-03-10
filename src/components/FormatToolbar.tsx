@@ -31,6 +31,15 @@ const wrapSelection = (
 };
 
 const FormatToolbar = ({ textareaRef, markdown, onChange }: FormatToolbarProps) => {
+  const [textColors, setTextColors] = useState<ColorItem[]>(getSelectedColors);
+
+  // Re-read colors on focus (in case user changed them on /colors page)
+  useEffect(() => {
+    const refresh = () => setTextColors(getSelectedColors());
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, []);
+
   const handleBold = () => {
     if (!textareaRef.current) return;
     wrapSelection(textareaRef.current, markdown, "**", "**", onChange);
@@ -57,7 +66,7 @@ const FormatToolbar = ({ textareaRef, markdown, onChange }: FormatToolbarProps) 
         <Bold className="w-4 h-4" />
       </button>
       <div className="w-px h-5 bg-border mx-1" />
-      {TEXT_COLORS.map((c) => (
+      {textColors.map((c) => (
         <button
           key={c.color}
           onClick={() => handleColor(c.color)}

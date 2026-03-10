@@ -117,7 +117,7 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
         <Bold className="w-3.5 h-3.5" />
       </button>
       <div className="w-px h-4 bg-border mx-0.5" />
-      {TEXT_COLORS.map((c) => (
+      {textColors.map((c) => (
         <button
           key={c.color}
           onMouseDown={(e) => applyColor(e, c.color)}
