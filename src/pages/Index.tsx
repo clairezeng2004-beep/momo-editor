@@ -428,16 +428,6 @@ const Index = () => {
     }
   };
 
-  if (authLoading || !user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-muted-foreground text-sm">加载中...</div>
-      </div>
-    );
-  }
-
-  const renderedHtml = directHtml ?? getHtml();
-
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false, style: true, ratio: true, font: true });
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
@@ -450,6 +440,16 @@ const Index = () => {
       el.style.height = `${el.scrollHeight}px`;
     }
   }, [markdown]);
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground text-sm">加载中...</div>
+      </div>
+    );
+  }
+
+  const renderedHtml = directHtml ?? getHtml();
 
   const settingsContent = (
     <div className="p-5 space-y-5">
