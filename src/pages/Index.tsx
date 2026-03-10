@@ -362,24 +362,6 @@ const Index = () => {
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false });
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const CollapsibleSection = ({ id, icon: Icon, label, children }: { id: string; icon: React.ElementType; label: string; children: React.ReactNode }) => {
-    const collapsed = collapsedSections[id] ?? false;
-    return (
-      <section>
-        <button
-          onClick={() => toggleSection(id)}
-          className="w-full text-[13px] font-medium mb-3 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronRight className={`w-3 h-3 transition-transform duration-200 ${collapsed ? "" : "rotate-90"}`} />
-          <Icon className="w-3.5 h-3.5" />
-          {label}
-        </button>
-        <div className={`transition-all duration-200 ${collapsed ? "hidden" : ""}`}>
-          {children}
-        </div>
-      </section>
-    );
-  };
 
   const sidebarContent = (
     <>
