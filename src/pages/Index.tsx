@@ -439,26 +439,31 @@ const Index = () => {
     </>
   );
 
+  const isMobile = useIsMobile();
+  const mobileScale = isMobile ? Math.min(1, (window.innerWidth - 48) / CARD_WIDTH) : 1;
+
   const previewContent = (
-    <div className="flex-1 overflow-auto flex items-start justify-center p-6 lg:p-10 bg-background">
+    <div className="flex-1 overflow-auto flex items-start justify-center p-4 lg:p-10 bg-background">
       <div className="flex flex-col items-center gap-4 relative">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground text-center">
           预览 · {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
-          <span className="ml-2 opacity-60">（可选中文字直接改色/加粗 · 超长自动分页）</span>
+          <span className="ml-2 opacity-60 hidden sm:inline">（可选中文字直接改色/加粗 · 超长自动分页）</span>
         </p>
-        <PaginatedPreview
-          html={renderedHtml}
-          cardWidth={CARD_WIDTH}
-          cardHeight={cardHeight}
-          fontSize={fontSize}
-          textAlign={textAlign}
-          templateClassName={template.className}
-          templateBackground={template.background}
-          onContentChange={handleContentChange}
-          contentRef={contentRef}
-          directHtml={directHtml}
-          markdown={markdown}
-        />
+        <div style={isMobile ? { transform: `scale(${mobileScale})`, transformOrigin: 'top center' } : undefined}>
+          <PaginatedPreview
+            html={renderedHtml}
+            cardWidth={CARD_WIDTH}
+            cardHeight={cardHeight}
+            fontSize={fontSize}
+            textAlign={textAlign}
+            templateClassName={template.className}
+            templateBackground={template.background}
+            onContentChange={handleContentChange}
+            contentRef={contentRef}
+            directHtml={directHtml}
+            markdown={markdown}
+          />
+        </div>
       </div>
     </div>
   );
