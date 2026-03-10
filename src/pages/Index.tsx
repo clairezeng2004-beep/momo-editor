@@ -423,6 +423,7 @@ const Index = () => {
               markdown={markdown}
               onChange={handleMarkdownChange}
             />
+            <div className="mt-3">
             <textarea
               ref={textareaRef}
               value={markdown}
