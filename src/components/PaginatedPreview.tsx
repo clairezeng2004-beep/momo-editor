@@ -102,6 +102,7 @@ const PaginatedPreview = ({
                 overflow: "hidden",
                 display: "flex",
                 flexDirection: "column",
+                background: templateBackground,
               }}
             >
               {idx === 0 && (
