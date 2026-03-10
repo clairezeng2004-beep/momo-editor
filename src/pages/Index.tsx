@@ -275,12 +275,56 @@ const Index = () => {
     [history]
   );
 
+  // Convert HTML back to simple markdown
+  const htmlToMarkdown = useCallback((html: string): string => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    const lines: string[] = [];
+    const processNode = (node: Node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent || "";
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return "";
+      const el = node as HTMLElement;
+      const tag = el.tagName;
+      const inner = Array.from(el.childNodes).map(processNode).join("");
+      switch (tag) {
+        case "H1": return `# ${inner}`;
+        case "H2": return `## ${inner}`;
+        case "H3": return `### ${inner}`;
+        case "H4": return `#### ${inner}`;
+        case "BLOCKQUOTE": return `> ${inner}`;
+        case "STRONG": case "B": return `**${inner}**`;
+        case "EM": case "I": return `*${inner}*`;
+        case "BR": return "\n";
+        case "P": case "DIV": return inner;
+        case "UL": return Array.from(el.children).map(li => `- ${processNode(li)}`).join("\n");
+        case "OL": return Array.from(el.children).map((li, i) => `${i + 1}. ${processNode(li)}`).join("\n");
+        case "LI": return inner;
+        case "HR": return "---";
+        case "CODE":
+          if (el.parentElement?.tagName === "PRE") return inner;
+          return `\`${inner}\``;
+        case "PRE": return `\`\`\`\n${inner}\n\`\`\``;
+        default: return inner;
+      }
+    };
+    Array.from(div.childNodes).forEach((node) => {
+      lines.push(processNode(node));
+    });
+    return lines.join("\n");
+  }, []);
+
   // When preview is directly edited
   const handleContentChange = useCallback(() => {
     if (contentRef.current) {
-      setDirectHtml(contentRef.current.innerHTML);
+      const currentHtml = contentRef.current.innerHTML;
+      setDirectHtml(currentHtml);
+      // Sync back to markdown
+      const md = htmlToMarkdown(currentHtml);
+      history.push(md);
     }
-  }, []);
+  }, [htmlToMarkdown, history]);
 
   // Keyboard shortcuts for undo/redo and bold
   useEffect(() => {
