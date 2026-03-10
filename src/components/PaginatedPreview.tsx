@@ -104,12 +104,6 @@ const PaginatedPreview = ({
                 background: templateBackground,
               }}
             >
-              {idx === 0 && (
-                <FloatingToolbar
-                  containerRef={{ current: cardRefs.current[0] } as React.RefObject<HTMLDivElement>}
-                  onContentChange={onContentChange}
-                />
-              )}
               {/* Content viewport */}
               <div
                 style={{
