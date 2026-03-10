@@ -522,7 +522,7 @@ const Index = () => {
               <ChevronDown className="w-3 h-3 shrink-0 text-muted-foreground" />
             </button>
             {showDraftList && (
-              <div className="absolute top-full left-0 mt-1.5 w-72 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-lg shadow-black/5 z-50 max-h-80 overflow-y-auto">
+              <div className="absolute top-full left-0 mt-1.5 w-72 bg-card/95 backdrop-blur-xl border border-border/60 rounded-xl shadow-lg shadow-black/5 z-[100] max-h-80 overflow-y-auto">
                 <div className="p-1.5 border-b border-border/40">
                   <button
                     onClick={() => {
