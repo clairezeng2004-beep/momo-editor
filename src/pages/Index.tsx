@@ -91,7 +91,6 @@ const Index = () => {
   const [exporting, setExporting] = useState(false);
   // When user edits directly in preview, we store overridden HTML
   const [directHtml, setDirectHtml] = useState<string | null>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
