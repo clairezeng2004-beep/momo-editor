@@ -216,6 +216,15 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, [markdown, template.id, ratio.id, fontSize, drafts.currentDraftId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auto-resize textarea
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [markdown]);
+
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
 
   // Preprocess: single newline → double newline for paragraph breaks
