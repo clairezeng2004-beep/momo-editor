@@ -21,6 +21,37 @@ import {
 
 const CARD_WIDTH = 420;
 
+// Extracted outside Index to prevent remount on every render
+const CollapsibleSection = ({
+  id,
+  icon: Icon,
+  label,
+  collapsed,
+  onToggle,
+  children,
+}: {
+  id: string;
+  icon: React.ElementType;
+  label: string;
+  collapsed: boolean;
+  onToggle: (id: string) => void;
+  children: React.ReactNode;
+}) => (
+  <section>
+    <button
+      onClick={() => onToggle(id)}
+      className="w-full text-[13px] font-medium mb-3 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+    >
+      <ChevronRight className={`w-3 h-3 transition-transform duration-200 ${collapsed ? "" : "rotate-90"}`} />
+      <Icon className="w-3.5 h-3.5" />
+      {label}
+    </button>
+    <div className={`transition-all duration-200 ${collapsed ? "hidden" : ""}`}>
+      {children}
+    </div>
+  </section>
+);
+
 const TemplateSelector = ({
   selected,
   onSelect,
