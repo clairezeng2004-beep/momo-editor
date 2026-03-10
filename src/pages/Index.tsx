@@ -164,7 +164,7 @@ const Index = () => {
   const isMobile = useIsMobile();
   const [showDraftList, setShowDraftList] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
-  const [showDefaultEditor, setShowDefaultEditor] = useState(false);
+  
   const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
   const draftDropdownRef = useRef<HTMLDivElement>(null);
   const eyedropperFileRef = useRef<HTMLInputElement>(null);
