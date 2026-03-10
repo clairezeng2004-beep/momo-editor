@@ -371,13 +371,72 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between shrink-0">
+      <header className="border-b border-border bg-card px-6 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
             <Type className="w-4 h-4 text-background" />
           </div>
-          <h1 className="text-lg font-bold tracking-tight">文字卡片生成器</h1>
-          <span className="text-xs text-muted-foreground hidden sm:inline">小红书长图排版</span>
+          <h1 className="text-lg font-bold tracking-tight hidden sm:block">文字卡片生成器</h1>
+          {/* Draft selector */}
+          <div className="relative">
+            <button
+              onClick={() => setShowDraftList(!showDraftList)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-sm hover:bg-secondary/80 transition-colors max-w-[180px]"
+            >
+              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{currentDraft?.title ?? "未命名"}</span>
+              <ChevronDown className="w-3 h-3 shrink-0" />
+            </button>
+            {showDraftList && (
+              <div className="absolute top-full left-0 mt-1 w-64 bg-card border border-border rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+                <div className="p-2 border-b border-border">
+                  <button
+                    onClick={() => {
+                      drafts.createDraft();
+                      setShowDraftList(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-secondary transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    新建草稿
+                  </button>
+                </div>
+                <div className="p-1">
+                  {drafts.drafts.map((d) => (
+                    <div
+                      key={d.id}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm cursor-pointer group ${
+                        d.id === drafts.currentDraftId ? "bg-secondary font-medium" : "hover:bg-secondary/50"
+                      }`}
+                      onClick={() => {
+                        drafts.switchDraft(d.id);
+                        setShowDraftList(false);
+                      }}
+                    >
+                      <FileText className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate">{d.title}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {new Date(d.updatedAt).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      </div>
+                      {drafts.drafts.length > 1 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            drafts.deleteDraft(d.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <button
           onClick={handleExport}
