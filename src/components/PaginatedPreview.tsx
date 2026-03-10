@@ -100,6 +100,8 @@ const PaginatedPreview = ({
           fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
           lineHeight: "2.0",
           pointerEvents: "none",
+          wordBreak: "break-word",
+          overflowWrap: "break-word",
         }}
         dangerouslySetInnerHTML={{ __html: html }}
       />
