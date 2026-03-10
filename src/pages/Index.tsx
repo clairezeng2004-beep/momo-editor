@@ -4,6 +4,7 @@ import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
 import { Download, Type, Ratio, Eye, Edit3 } from "lucide-react";
+import FormatToolbar from "@/components/FormatToolbar";
 
 const CARD_WIDTH = 420;
 
@@ -81,6 +82,7 @@ const Index = () => {
   const [showEditor, setShowEditor] = useState(true);
   const [exporting, setExporting] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
 
@@ -199,11 +201,17 @@ const Index = () => {
 
           {/* Editor */}
           <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border`}>
-            <div className="p-5">
+          <div className="p-5 space-y-3">
               <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
                 <Edit3 className="w-3.5 h-3.5" /> Markdown 编辑
               </h2>
+              <FormatToolbar
+                textareaRef={textareaRef}
+                markdown={markdown}
+                onChange={setMarkdown}
+              />
               <textarea
+                ref={textareaRef}
                 value={markdown}
                 onChange={(e) => setMarkdown(e.target.value)}
                 className="w-full h-64 lg:h-80 bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
