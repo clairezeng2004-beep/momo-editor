@@ -4,6 +4,7 @@ import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
 import { Download, Type, Ratio, Eye, Edit3 } from "lucide-react";
+import FormatToolbar from "@/components/FormatToolbar";
 
 const CARD_WIDTH = 420;
 
