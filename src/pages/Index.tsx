@@ -665,7 +665,6 @@ const Index = () => {
     </>
   );
 
-  const isMobile = useIsMobile();
   const mobileScale = isMobile ? Math.min(1, (window.innerWidth - 48) / CARD_WIDTH) : 1;
 
   const previewContent = (
