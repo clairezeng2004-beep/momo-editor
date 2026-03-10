@@ -6,7 +6,6 @@ import { TEMPLATES, ASPECT_RATIOS } from "@/lib/templates";
 import { COLOR_PALETTE } from "@/lib/colors";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
 import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight, Menu, LogOut, Upload, Pipette } from "lucide-react";
-import DraggableColorGroup from "@/components/DraggableColorGroup";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -639,15 +638,22 @@ const Index = () => {
           {Object.entries(COLOR_PALETTE).map(([group, colors]) => (
             <div key={group}>
               <p className="text-[11px] text-muted-foreground mb-1.5">{group}</p>
-              <DraggableColorGroup
-                group={group}
-                colors={colors}
-                maxWidth="calc(4.5 * 36px)"
-                onApplyColor={(color) => {
-                  document.execCommand("foreColor", false, color);
-                  handleContentChange();
-                }}
-              />
+              <div className="overflow-x-auto pb-1.5 scrollbar-hide" style={{ maxWidth: 'calc(4.5 * 36px)' }}>
+                <div className="flex gap-2 w-max">
+                  {colors.map((c) => (
+                    <button
+                      key={c.color}
+                      onClick={() => {
+                        document.execCommand("foreColor", false, c.color);
+                        handleContentChange();
+                      }}
+                      className="w-7 h-7 shrink-0 rounded-full border border-border/60 hover:scale-110 transition-transform"
+                      style={{ backgroundColor: c.color }}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -712,15 +718,20 @@ const Index = () => {
           {Object.entries(COLOR_PALETTE).map(([group, colors]) => (
             <div key={group}>
               <p className="text-[11px] text-muted-foreground mb-1.5">{group}</p>
-              <DraggableColorGroup
-                group={group}
-                colors={colors}
-                wrap
-                onApplyColor={(color) => {
-                  document.execCommand("foreColor", false, color);
-                  handleContentChange();
-                }}
-              />
+              <div className="flex gap-2 flex-wrap pb-1">
+                {colors.map((c) => (
+                  <button
+                    key={c.color}
+                    onClick={() => {
+                      document.execCommand("foreColor", false, c.color);
+                      handleContentChange();
+                    }}
+                    className="w-7 h-7 shrink-0 rounded-full border border-border/60 hover:scale-110 transition-transform"
+                    style={{ backgroundColor: c.color }}
+                    title={c.label}
+                  />
+                ))}
+              </div>
             </div>
           ))}
         </div>
