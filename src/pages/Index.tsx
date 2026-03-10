@@ -97,9 +97,53 @@ const Index = () => {
 
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
 
+  // Preprocess: single newline → double newline for paragraph breaks
+  // But preserve special markdown lines (headings, lists, blockquotes, hr, code fences)
+  const preprocessMarkdown = useCallback((text: string) => {
+    const lines = text.split('\n');
+    const result: string[] = [];
+    let inCodeBlock = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // Track code fences
+      if (trimmed.startsWith('```')) {
+        inCodeBlock = !inCodeBlock;
+        result.push(line);
+        continue;
+      }
+
+      if (inCodeBlock) {
+        result.push(line);
+        continue;
+      }
+
+      result.push(line);
+
+      // Add extra newline after non-empty lines that are followed by another non-empty line
+      // Skip if current or next line is special markdown syntax
+      if (i < lines.length - 1) {
+        const nextLine = lines[i + 1]?.trim() ?? '';
+        const isCurrentEmpty = trimmed === '';
+        const isNextEmpty = nextLine === '';
+        const isSpecial = (l: string) =>
+          l.startsWith('#') || l.startsWith('-') || l.startsWith('*') || l.startsWith('>') ||
+          l.startsWith('```') || l.match(/^\d+\./) || l === '---' || l === '***' || l === '';
+
+        if (!isCurrentEmpty && !isNextEmpty && !isSpecial(trimmed) && !isSpecial(nextLine)) {
+          result.push('');
+        }
+      }
+    }
+    return result.join('\n');
+  }, []);
+
   const getHtml = useCallback(() => {
-    return marked.parse(markdown, { async: false }) as string;
-  }, [markdown]);
+    const processed = preprocessMarkdown(markdown);
+    return marked.parse(processed, { async: false }) as string;
+  }, [markdown, preprocessMarkdown]);
 
   // When markdown changes from textarea, reset directHtml
   const handleMarkdownChange = useCallback(
