@@ -588,7 +588,7 @@ const Index = () => {
       />
       {/* Header */}
       <header className="sticky top-0 border-b border-border/50 bg-card/95 backdrop-blur-xl px-3 sm:px-5 py-2.5 flex items-center justify-between shrink-0 z-[200]">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-2">
           {/* Menu button - opens settings sheet */}
           <Sheet open={showSettingsSheet} onOpenChange={setShowSettingsSheet}>
             <SheetTrigger asChild>
