@@ -196,7 +196,7 @@ const PaginatedPreview = ({
                   suppressContentEditableWarning
                   style={{ opacity: 0.85, outline: "none", cursor: "text" }}
                 >
-                  小红书@热可可
+                  页脚可以在这里编辑或删除
                 </span>
                 {totalPages > 1 && (
                   <span style={{ opacity: 0.7 }}>{idx + 1}/{totalPages}</span>
