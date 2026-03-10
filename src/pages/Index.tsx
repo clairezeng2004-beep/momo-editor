@@ -3,10 +3,11 @@ import { toPng } from "html-to-image";
 import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
-import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2 } from "lucide-react";
+import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown } from "lucide-react";
 import FormatToolbar from "@/components/FormatToolbar";
 import PaginatedPreview from "@/components/PaginatedPreview";
 import { useHistory } from "@/hooks/use-history";
+import { useDrafts } from "@/hooks/use-drafts";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -81,18 +82,72 @@ const RatioSelector = ({
 );
 
 const Index = () => {
-  const history = useHistory(DEFAULT_MARKDOWN);
+  const drafts = useDrafts(DEFAULT_MARKDOWN);
+  const [showDraftList, setShowDraftList] = useState(false);
+  const draftDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close draft dropdown on click outside
+  useEffect(() => {
+    if (!showDraftList) return;
+    const handler = (e: MouseEvent) => {
+      if (draftDropdownRef.current && !draftDropdownRef.current.contains(e.target as Node)) {
+        setShowDraftList(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showDraftList]);
+
+  // Initialize: load current draft or create one
+  useEffect(() => {
+    if (drafts.drafts.length === 0) {
+      drafts.createDraft();
+    } else if (!drafts.currentDraftId) {
+      drafts.switchDraft(drafts.drafts[0].id);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const currentDraft = drafts.getCurrentDraft();
+  const history = useHistory(currentDraft?.markdown ?? DEFAULT_MARKDOWN);
   const markdown = history.value;
-  const [template, setTemplate] = useState(TEMPLATES[0]);
-  const [ratio, setRatio] = useState(ASPECT_RATIOS[0]);
-  const [fontSize, setFontSize] = useState(16);
+  const [template, setTemplate] = useState(() =>
+    TEMPLATES.find((t) => t.id === currentDraft?.templateId) ?? TEMPLATES[0]
+  );
+  const [ratio, setRatio] = useState(() =>
+    ASPECT_RATIOS.find((r) => r.id === currentDraft?.ratioId) ?? ASPECT_RATIOS[0]
+  );
+  const [fontSize, setFontSize] = useState(currentDraft?.fontSize ?? 15);
   const [textAlign] = useState<"justify" | "left" | "center">("justify");
   const [showEditor, setShowEditor] = useState(true);
   const [exporting, setExporting] = useState(false);
-  // When user edits directly in preview, we store overridden HTML
   const [directHtml, setDirectHtml] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // When switching drafts, reload state
+  const prevDraftIdRef = useRef(drafts.currentDraftId);
+  useEffect(() => {
+    if (drafts.currentDraftId && drafts.currentDraftId !== prevDraftIdRef.current) {
+      const d = drafts.getCurrentDraft();
+      if (d) {
+        history.reset(d.markdown);
+        setTemplate(TEMPLATES.find((t) => t.id === d.templateId) ?? TEMPLATES[0]);
+        setRatio(ASPECT_RATIOS.find((r) => r.id === d.ratioId) ?? ASPECT_RATIOS[0]);
+        setFontSize(d.fontSize);
+        setDirectHtml(null);
+      }
+    }
+    prevDraftIdRef.current = drafts.currentDraftId;
+  }, [drafts.currentDraftId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save draft on changes (debounced)
+  useEffect(() => {
+    if (!drafts.currentDraftId) return;
+    const timer = setTimeout(() => {
+      drafts.updateDraft(markdown, template.id, ratio.id, fontSize);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [markdown, template.id, ratio.id, fontSize, drafts.currentDraftId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
 
@@ -329,13 +384,72 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="border-b border-border bg-card px-6 py-4 flex items-center justify-between shrink-0">
+      <header className="border-b border-border bg-card px-6 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
             <Type className="w-4 h-4 text-background" />
           </div>
-          <h1 className="text-lg font-bold tracking-tight">文字卡片生成器</h1>
-          <span className="text-xs text-muted-foreground hidden sm:inline">小红书长图排版</span>
+          <h1 className="text-lg font-bold tracking-tight hidden sm:block">文字卡片生成器</h1>
+          {/* Draft selector */}
+          <div className="relative" ref={draftDropdownRef}>
+            <button
+              onClick={() => setShowDraftList(!showDraftList)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-sm hover:bg-secondary/80 transition-colors max-w-[180px]"
+            >
+              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{currentDraft?.title ?? "未命名"}</span>
+              <ChevronDown className="w-3 h-3 shrink-0" />
+            </button>
+            {showDraftList && (
+              <div className="absolute top-full left-0 mt-1 w-64 bg-card border border-border rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
+                <div className="p-2 border-b border-border">
+                  <button
+                    onClick={() => {
+                      drafts.createDraft();
+                      setShowDraftList(false);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-secondary transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    新建草稿
+                  </button>
+                </div>
+                <div className="p-1">
+                  {drafts.drafts.map((d) => (
+                    <div
+                      key={d.id}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm cursor-pointer group ${
+                        d.id === drafts.currentDraftId ? "bg-secondary font-medium" : "hover:bg-secondary/50"
+                      }`}
+                      onClick={() => {
+                        drafts.switchDraft(d.id);
+                        setShowDraftList(false);
+                      }}
+                    >
+                      <FileText className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <div className="truncate">{d.title}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {new Date(d.updatedAt).toLocaleDateString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      </div>
+                      {drafts.drafts.length > 1 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            drafts.deleteDraft(d.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <button
           onClick={handleExport}

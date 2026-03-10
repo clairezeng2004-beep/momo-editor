@@ -35,7 +35,7 @@ const PaginatedPreview = ({
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [pages, setPages] = useState<PageData[]>([{ startIndex: 0, endIndex: -1 }]);
 
-  const padding = { x: fontSize * 1.8, y: fontSize * 2.2 };
+  const padding = { x: fontSize * 1.6, y: fontSize * 1.8 };
   const contentHeight = cardHeight - padding.y * 2;
 
   // Measure and paginate
