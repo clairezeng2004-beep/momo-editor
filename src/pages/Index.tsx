@@ -398,7 +398,7 @@ const Index = () => {
 
       {/* Editor */}
       <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border/60`}>
-        <div className="p-5 space-y-3">
+        <div className="p-5 space-y-4">
           <CollapsibleSection id="editor" icon={Edit3} label="编辑">
             <div className="flex items-center justify-end gap-0.5 mb-2">
               <button
