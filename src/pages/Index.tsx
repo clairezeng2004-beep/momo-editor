@@ -327,19 +327,34 @@ const Index = () => {
 
   const renderedHtml = directHtml ?? getHtml();
 
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  const CollapsibleSection = ({ id, icon: Icon, label, children }: { id: string; icon: React.ElementType; label: string; children: React.ReactNode }) => {
+    const collapsed = collapsedSections[id] ?? false;
+    return (
+      <section>
+        <button
+          onClick={() => toggleSection(id)}
+          className="w-full text-sm font-semibold mb-2 flex items-center gap-2 text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
+        >
+          <ChevronRight className={`w-3 h-3 transition-transform ${collapsed ? "" : "rotate-90"}`} />
+          <Icon className="w-3.5 h-3.5" />
+          {label}
+        </button>
+        {!collapsed && children}
+      </section>
+    );
+  };
+
   const sidebarContent = (
     <>
       <div className="p-5 space-y-6">
-        {/* Template */}
-        <section>
-          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-            <Eye className="w-3.5 h-3.5" /> 样式
-          </h2>
+        <CollapsibleSection id="style" icon={Eye} label="样式">
           <TemplateSelector
             selected={template}
             onSelect={(t) => {
               setTemplate(t);
-              // Apply custom template's default font size
               if ("isCustom" in t) {
                 setFontSize((t as CustomTemplate).defaultFontSize);
               }
@@ -352,21 +367,13 @@ const Index = () => {
               if (template.id === id) setTemplate(TEMPLATES[0]);
             }}
           />
-        </section>
+        </CollapsibleSection>
 
-        {/* Ratio */}
-        <section>
-          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-            <Ratio className="w-3.5 h-3.5" /> 比例
-          </h2>
+        <CollapsibleSection id="ratio" icon={Ratio} label="比例">
           <RatioSelector selected={ratio} onSelect={setRatio} />
-        </section>
+        </CollapsibleSection>
 
-        {/* Font size */}
-        <section>
-          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-            <Type className="w-3.5 h-3.5" /> 字号 ({fontSize}px)
-          </h2>
+        <CollapsibleSection id="font" icon={Type} label={`字号 (${fontSize}px)`}>
           <input
             type="range"
             min={12}
@@ -375,9 +382,7 @@ const Index = () => {
             onChange={(e) => setFontSize(Number(e.target.value))}
             className="w-full accent-foreground"
           />
-        </section>
-
-        {/* Text align - now per-paragraph via floating toolbar */}
+        </CollapsibleSection>
 
         {/* Toggle editor on mobile */}
         <button
@@ -392,11 +397,8 @@ const Index = () => {
       {/* Editor */}
       <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border`}>
         <div className="p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-              <Edit3 className="w-3.5 h-3.5" /> Markdown 编辑
-            </h2>
-            <div className="flex items-center gap-1">
+          <CollapsibleSection id="editor" icon={Edit3} label="Markdown 编辑">
+            <div className="flex items-center justify-end gap-1 mb-2">
               <button
                 onClick={() => { history.undo(); setDirectHtml(null); }}
                 disabled={!history.canUndo}
@@ -414,25 +416,24 @@ const Index = () => {
                 <Redo2 className="w-3.5 h-3.5" />
               </button>
             </div>
-          </div>
-          <FormatToolbar
-            textareaRef={textareaRef}
-            markdown={markdown}
-            onChange={handleMarkdownChange}
-          />
-          <textarea
-            ref={textareaRef}
-            value={markdown}
-            onChange={(e) => {
-              handleMarkdownChange(e.target.value);
-              // Auto-grow
-              const el = e.target;
-              el.style.height = 'auto';
-              el.style.height = `${Math.max(200, el.scrollHeight)}px`;
-            }}
-            className="w-full min-h-[200px] bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
-            placeholder="在此输入内容，直接换行即可分段..."
-          />
+            <FormatToolbar
+              textareaRef={textareaRef}
+              markdown={markdown}
+              onChange={handleMarkdownChange}
+            />
+            <textarea
+              ref={textareaRef}
+              value={markdown}
+              onChange={(e) => {
+                handleMarkdownChange(e.target.value);
+                const el = e.target;
+                el.style.height = 'auto';
+                el.style.height = `${Math.max(200, el.scrollHeight)}px`;
+              }}
+              className="w-full min-h-[200px] bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
+              placeholder="在此输入内容，直接换行即可分段..."
+            />
+          </CollapsibleSection>
         </div>
       </div>
     </>
