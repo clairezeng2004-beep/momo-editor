@@ -21,6 +21,12 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const [textColors, setTextColors] = useState<ColorItem[]>(getSelectedColors);
+
+  // Re-read colors when toolbar becomes visible (in case user changed them on /colors page)
+  useEffect(() => {
+    if (visible) setTextColors(getSelectedColors());
+  }, [visible]);
 
   const updatePosition = useCallback(() => {
     const selection = window.getSelection();
