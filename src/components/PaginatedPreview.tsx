@@ -14,6 +14,8 @@ interface PaginatedPreviewProps {
   markdown: string;
 }
 
+const FOOTER_HEIGHT = 28;
+
 const PaginatedPreview = ({
   html,
   cardWidth,
@@ -31,9 +33,8 @@ const PaginatedPreview = ({
   const [totalPages, setTotalPages] = useState(1);
 
   const padding = { x: fontSize * 1.6, y: fontSize * 1.8 };
-  const contentHeight = cardHeight - padding.y * 2;
+  const contentHeight = cardHeight - padding.y * 2 - FOOTER_HEIGHT;
 
-  // Measure total content height and compute pages
   const paginate = useCallback(() => {
     const container = measureRef.current;
     if (!container) return;
@@ -52,7 +53,7 @@ const PaginatedPreview = ({
 
   return (
     <>
-      {/* Hidden measure container — full content rendered to get total height */}
+      {/* Hidden measure container */}
       <div
         ref={measureRef}
         className={`${templateClassName} markdown-body`}
@@ -97,6 +98,8 @@ const PaginatedPreview = ({
                 boxSizing: "border-box",
                 textAlign: textAlign as any,
                 overflow: "hidden",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               {idx === 0 && (
@@ -105,24 +108,45 @@ const PaginatedPreview = ({
                   onContentChange={onContentChange}
                 />
               )}
-              {/* Content viewport: offset by page index * contentHeight */}
+              {/* Content viewport */}
               <div
                 style={{
+                  flex: 1,
                   height: contentHeight,
                   overflow: "hidden",
                 }}
               >
                 <div
                   className="markdown-body"
-                  contentEditable={idx === 0}
+                  contentEditable
                   suppressContentEditableWarning
                   dangerouslySetInnerHTML={{ __html: html }}
-                  onInput={idx === 0 ? onContentChange : undefined}
+                  onInput={onContentChange}
                   style={{
                     outline: "none",
                     marginTop: idx === 0 ? 0 : -(idx * contentHeight),
+                    cursor: "text",
                   }}
                 />
+              </div>
+              {/* Footer */}
+              <div
+                style={{
+                  height: FOOTER_HEIGHT,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  fontSize: "10px",
+                  color: "#C8A951",
+                  letterSpacing: "0.02em",
+                  flexShrink: 0,
+                  paddingTop: 4,
+                }}
+              >
+                <span style={{ opacity: 0.85 }}>小红书@热可可</span>
+                {totalPages > 1 && (
+                  <span style={{ opacity: 0.7 }}>{idx + 1}/{totalPages}</span>
+                )}
               </div>
             </div>
           </div>
