@@ -100,7 +100,7 @@
 .template-apple-notes .markdown-body h1 {
   font-size: 1.55em;
   font-weight: 800;
-  color: #303030;
+  color: #4a4a4a;
   margin: 0 0 0.7em 0;
   line-height: 1.35;
 }
@@ -108,25 +108,25 @@
 .template-apple-notes .markdown-body h2 {
   font-size: 1.3em;
   font-weight: 700;
-  color: #404040;
+  color: #505050;
   margin: 1.4em 0 0.5em 0;
 }
 
 .template-apple-notes .markdown-body h3 {
   font-size: 1.1em;
   font-weight: 700;
-  color: #404040;
+  color: #505050;
   margin: 1.2em 0 0.4em 0;
 }
 
 .template-apple-notes .markdown-body p {
   margin: 0 0 1.5em 0;
-  color: #303030;
+  color: #4a4a4a;
 }
 
 .template-apple-notes .markdown-body strong {
   font-weight: 700;
-  color: #1a1a1a;
+  color: #3a3a3a;
 }
 
 .template-apple-notes .markdown-body blockquote {
