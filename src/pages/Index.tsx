@@ -415,6 +415,14 @@ const Index = () => {
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false });
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
+  // Auto-resize textarea to fit content
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [markdown]);
 
   const sidebarContent = (
     <>
@@ -496,13 +504,10 @@ const Index = () => {
               value={markdown}
               onChange={(e) => {
                 handleMarkdownChange(e.target.value);
-                const el = e.target;
-                el.style.height = 'auto';
-                el.style.height = `${el.scrollHeight}px`;
               }}
-              className="w-full min-h-[120px] bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
+              className="w-full min-h-[80px] bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
               placeholder="在此输入内容，直接换行即可分段..."
-              style={{ overflow: 'hidden', height: 'auto' }}
+              style={{ overflow: 'hidden' }}
             />
             </div>
           </CollapsibleSection>
@@ -575,7 +580,7 @@ const Index = () => {
         editingTemplate={editingTemplate}
       />
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0 relative z-[200]">
+      <header className="sticky top-0 border-b border-border/50 bg-card/95 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0 z-[200]">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-foreground/90 flex items-center justify-center">
             <Type className="w-3.5 h-3.5 text-background" />
