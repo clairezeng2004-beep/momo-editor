@@ -284,3 +284,11 @@
 .template-clean .markdown-body h2 {
   color: #3d3d3d;
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

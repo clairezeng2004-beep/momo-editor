@@ -585,7 +585,7 @@ const Index = () => {
           {Object.entries(COLOR_PALETTE).map(([group, colors]) => (
             <div key={group}>
               <p className="text-[11px] text-muted-foreground mb-1.5">{group}</p>
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
                 {colors.map((c) => (
                   <button
                     key={c.color}
@@ -593,7 +593,7 @@ const Index = () => {
                       document.execCommand("foreColor", false, c.color);
                       handleContentChange();
                     }}
-                    className="w-7 h-7 rounded-full border border-border/60 hover:scale-110 transition-transform"
+                    className="w-7 h-7 shrink-0 rounded-full border border-border/60 hover:scale-110 transition-transform"
                     style={{ backgroundColor: c.color }}
                     title={c.label}
                   />
