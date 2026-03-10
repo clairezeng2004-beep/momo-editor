@@ -141,9 +141,17 @@ const PaginatedPreview = ({
                   letterSpacing: "0.02em",
                   flexShrink: 0,
                   paddingTop: 4,
+                  margin: `0 -${padding.x}px`,
+                  padding: `0 ${padding.x}px`,
                 }}
               >
-                <span style={{ opacity: 0.85 }}>小红书@热可可</span>
+                <span
+                  contentEditable
+                  suppressContentEditableWarning
+                  style={{ opacity: 0.85, outline: "none", cursor: "text" }}
+                >
+                  小红书@热可可
+                </span>
                 {totalPages > 1 && (
                   <span style={{ opacity: 0.7 }}>{idx + 1}/{totalPages}</span>
                 )}
