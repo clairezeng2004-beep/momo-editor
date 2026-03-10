@@ -141,7 +141,7 @@ const PaginatedPreview = ({
       return;
     }
 
-    const lines = getTextLineRects(container);
+    const lines = getContentRects(container);
 
     if (lines.length === 0) {
       const pageCount = Math.max(1, Math.ceil(totalH / contentAreaHeight));
