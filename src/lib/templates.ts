@@ -8,6 +8,13 @@ export interface TemplateStyle {
 
 export const TEMPLATES: TemplateStyle[] = [
   {
+    id: "apple-notes",
+    name: "备忘录",
+    className: "template-apple-notes",
+    previewBg: "#ffffff",
+    previewText: "#e8a32e",
+  },
+  {
     id: "clean",
     name: "简约白",
     className: "template-clean",
