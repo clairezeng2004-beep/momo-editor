@@ -595,7 +595,7 @@ const Index = () => {
           {Object.entries(COLOR_PALETTE).map(([group, colors]) => (
             <div key={group}>
               <p className="text-[11px] text-muted-foreground mb-1.5">{group}</p>
-              <div className="w-[160px] max-w-full flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
+              <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
                 {colors.map((c) => (
                   <button
                     key={c.color}
