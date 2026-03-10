@@ -445,9 +445,6 @@ const Index = () => {
     }
   };
 
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false, style: true, ratio: true, font: true });
-  const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
-  const [showSettingsSheet, setShowSettingsSheet] = useState(false);
 
   const syncTextareaHeight = useCallback(() => {
 
