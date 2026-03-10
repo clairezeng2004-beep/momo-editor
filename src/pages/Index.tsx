@@ -791,7 +791,7 @@ const Index = () => {
   const mobileScale = isMobile ? Math.min(1, (window.innerWidth - 48) / CARD_WIDTH) : 1;
 
   const previewContent = (
-    <div className="flex-1 overflow-auto flex flex-col items-center bg-background/80 relative">
+    <div className="flex-1 overflow-auto overscroll-contain flex flex-col items-center bg-background/80 relative">
       {/* Fixed toolbar above preview - stays at top of scroll container */}
       <div className="sticky top-0 z-10 w-full bg-background/95 backdrop-blur-sm py-2 px-4 lg:px-10 flex justify-center">
         <div className="w-full max-w-lg">
