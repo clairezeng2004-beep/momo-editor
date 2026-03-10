@@ -956,7 +956,7 @@ const Index = () => {
       {/* Main - Desktop uses resizable panels */}
       {/* Mobile layout - preview only, no sidebar */}
       <div className="flex-1 flex flex-col lg:hidden overflow-hidden">
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overscroll-contain">
           {previewContent}
           {/* Tablet: show editor below preview */}
           <div className="hidden md:block lg:hidden">
