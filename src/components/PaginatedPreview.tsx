@@ -15,6 +15,7 @@ interface PaginatedPreviewProps {
   footerEnabled?: boolean;
   footerText?: string;
   footerColor?: string;
+  disablePagination?: boolean;
 }
 
 interface PaginationState {
@@ -30,9 +31,7 @@ const getTextLineRects = (container: HTMLDivElement) => {
   const containerRect = container.getBoundingClientRect();
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
     acceptNode: (node) =>
-      node.textContent?.trim()
-        ? NodeFilter.FILTER_ACCEPT
-        : NodeFilter.FILTER_REJECT,
+      node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
   });
 
   const rects: Array<{ top: number; bottom: number }> = [];
@@ -64,7 +63,6 @@ const getTextLineRects = (container: HTMLDivElement) => {
     ) {
       lines.push({ top: rect.top, bottom: rect.bottom });
     } else {
-      // Merge: extend the line's bottom if needed
       last.bottom = Math.max(last.bottom, rect.bottom);
     }
 
@@ -87,6 +85,7 @@ const PaginatedPreview = ({
   footerEnabled = true,
   footerText = "页脚可以在这里编辑或删除",
   footerColor = "#C8A951",
+  disablePagination = false,
 }: PaginatedPreviewProps) => {
   const measureRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -99,14 +98,30 @@ const PaginatedPreview = ({
   const footerH = footerEnabled ? FOOTER_HEIGHT : 0;
   const rawContentHeight = cardHeight - padding.y * 2 - footerH;
   const contentAreaHeight = Math.max(lineHeight, Math.floor(rawContentHeight));
+  const contentTextStyle: React.CSSProperties = {
+    width: "100%",
+    fontSize: `${fontSize}px`,
+    lineHeight: `${LINE_HEIGHT_RATIO}`,
+    textAlign: textAlign as React.CSSProperties["textAlign"],
+    fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
+    wordBreak: "break-word",
+    overflowWrap: "break-word",
+    display: "flow-root",
+    boxSizing: "border-box",
+  };
 
   const paginate = useCallback(() => {
     const container = measureRef.current;
     if (!container) return;
 
-    const totalH = container.scrollHeight;
+    const totalH = Math.ceil(container.scrollHeight);
     if (totalH <= 0) {
       setPagination({ offsets: [0], heights: [contentAreaHeight] });
+      return;
+    }
+
+    if (disablePagination) {
+      setPagination({ offsets: [0], heights: [Math.max(lineHeight, totalH)] });
       return;
     }
 
@@ -125,40 +140,43 @@ const PaginatedPreview = ({
       return;
     }
 
-    // Strict whole-line pagination:
-    // A line fits on the current page only if its ENTIRE height (bottom - pageOffset) <= contentAreaHeight.
-    // If a line's bottom exceeds the page, that line starts a new page.
     const offsets: number[] = [0];
     const heights: number[] = [];
     let currentOffset = 0;
+    let lastFittingBottom = Math.ceil(lines[0].bottom);
 
-    for (let i = 0; i < lines.length; i++) {
+    for (let i = 1; i < lines.length; i++) {
       const line = lines[i];
-      const lineBottom = line.bottom - currentOffset;
+      const absoluteTop = Math.floor(line.top);
+      const absoluteBottom = Math.ceil(line.bottom);
+      const relativeBottom = absoluteBottom - currentOffset;
 
-      // If this line's bottom exceeds the content area, start a new page at this line's top
-      if (lineBottom > contentAreaHeight + PAGE_EPSILON && i > 0) {
-        // Close current page: height is from currentOffset to the top of this overflowing line
-        const pageH = Math.max(lineHeight, line.top - currentOffset);
-        heights.push(Math.min(contentAreaHeight, pageH));
-
-        // Start new page at this line's top
-        currentOffset = line.top;
+      if (relativeBottom > contentAreaHeight + PAGE_EPSILON) {
+        const pageHeight = Math.max(
+          lineHeight,
+          Math.min(contentAreaHeight, lastFittingBottom - currentOffset)
+        );
+        heights.push(pageHeight);
+        currentOffset = absoluteTop;
         offsets.push(currentOffset);
       }
+
+      lastFittingBottom = Math.max(lastFittingBottom, absoluteBottom);
     }
 
-    // Close last page
-    const lastPageH = Math.max(lineHeight, Math.min(contentAreaHeight, totalH - currentOffset));
-    heights.push(lastPageH);
+    const finalHeight = Math.max(
+      lineHeight,
+      Math.min(contentAreaHeight, Math.max(lastFittingBottom, totalH) - currentOffset)
+    );
+    heights.push(finalHeight);
 
     setPagination({ offsets, heights });
-  }, [contentAreaHeight, lineHeight]);
+  }, [contentAreaHeight, disablePagination, lineHeight]);
 
   useEffect(() => {
     const timer = setTimeout(paginate, 50);
     return () => clearTimeout(timer);
-  }, [html, paginate, fontSize, cardWidth, cardHeight, footerEnabled]);
+  }, [html, paginate, fontSize, cardWidth, cardHeight, footerEnabled, disablePagination]);
 
   useEffect(() => {
     if (editableRef.current && contentRef) {
@@ -202,15 +220,8 @@ const PaginatedPreview = ({
           left: -99999,
           visibility: "hidden",
           width: cardWidth - padding.x * 2,
-          fontSize: `${fontSize}px`,
-          textAlign: textAlign as React.CSSProperties["textAlign"],
-          fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
-          lineHeight: `${LINE_HEIGHT_RATIO}`,
           pointerEvents: "none",
-          wordBreak: "break-word",
-          overflowWrap: "break-word",
-          display: "flow-root",
-          boxSizing: "border-box",
+          ...contentTextStyle,
         }}
         dangerouslySetInnerHTML={{ __html: html }}
       />
@@ -219,6 +230,10 @@ const PaginatedPreview = ({
         {pagination.offsets.map((pageOffset, idx) => {
           const pageHeight = pagination.heights[idx] ?? contentAreaHeight;
           const totalPages = pagination.offsets.length;
+          const renderedContentHeight = disablePagination ? pageHeight : contentAreaHeight;
+          const renderedCardHeight = disablePagination
+            ? pageHeight + padding.y * 2 + footerH
+            : cardHeight;
 
           return (
             <div key={idx} className="flex flex-col items-center gap-1">
@@ -235,9 +250,10 @@ const PaginatedPreview = ({
                 data-page-index={idx}
                 style={{
                   width: cardWidth,
-                  height: cardHeight,
+                  height: renderedCardHeight,
                   fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
                   fontSize: `${fontSize}px`,
+                  lineHeight: `${LINE_HEIGHT_RATIO}`,
                   padding: `${padding.y}px ${padding.x}px`,
                   borderRadius: 0,
                   boxSizing: "border-box",
@@ -252,14 +268,14 @@ const PaginatedPreview = ({
               >
                 <div
                   style={{
-                    height: contentAreaHeight,
+                    height: renderedContentHeight,
                     position: "relative",
                     flexShrink: 0,
                   }}
                 >
                   <div
                     style={{
-                      height: pageHeight,
+                      height: renderedContentHeight,
                       overflow: "hidden",
                       position: "relative",
                       isolation: "isolate",
@@ -278,12 +294,11 @@ const PaginatedPreview = ({
                           position: "absolute",
                           top: 0,
                           left: 0,
-                          width: "100%",
                           transform: `translateY(-${pageOffset}px)`,
                           transformOrigin: "top left",
-                          display: "flow-root",
                           outline: "none",
                           cursor: "text",
+                          ...contentTextStyle,
                         }}
                       />
                     ) : (
@@ -294,11 +309,10 @@ const PaginatedPreview = ({
                           position: "absolute",
                           top: 0,
                           left: 0,
-                          width: "100%",
                           transform: `translateY(-${pageOffset}px)`,
                           transformOrigin: "top left",
-                          display: "flow-root",
                           pointerEvents: "none",
+                          ...contentTextStyle,
                         }}
                       />
                     )}
@@ -319,11 +333,11 @@ const PaginatedPreview = ({
                       padding: `0 ${padding.x}px`,
                     }}
                   >
-                    <span style={{ opacity: 0.85 }}>
-                      {footerText}
-                    </span>
+                    <span style={{ opacity: 0.85 }}>{footerText}</span>
                     {totalPages > 1 && (
-                      <span style={{ opacity: 0.7 }}>{idx + 1}/{totalPages}</span>
+                      <span style={{ opacity: 0.7 }}>
+                        {idx + 1}/{totalPages}
+                      </span>
                     )}
                   </div>
                 )}
