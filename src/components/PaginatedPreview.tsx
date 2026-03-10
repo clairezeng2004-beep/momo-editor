@@ -12,6 +12,9 @@ interface PaginatedPreviewProps {
   contentRef: React.RefObject<HTMLDivElement>;
   directHtml: string | null;
   markdown: string;
+  footerEnabled?: boolean;
+  footerText?: string;
+  footerColor?: string;
 }
 
 interface PaginationState {
@@ -59,7 +62,10 @@ const getTextLineRects = (container: HTMLDivElement) => {
       Math.abs(last.top - rect.top) > PAGE_EPSILON ||
       Math.abs(last.bottom - rect.bottom) > PAGE_EPSILON
     ) {
-      lines.push(rect);
+      lines.push({ top: rect.top, bottom: rect.bottom });
+    } else {
+      // Merge: extend the line's bottom if needed
+      last.bottom = Math.max(last.bottom, rect.bottom);
     }
 
     return lines;
@@ -78,6 +84,9 @@ const PaginatedPreview = ({
   contentRef,
   directHtml,
   markdown,
+  footerEnabled = true,
+  footerText = "页脚可以在这里编辑或删除",
+  footerColor = "#C8A951",
 }: PaginatedPreviewProps) => {
   const measureRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -87,7 +96,8 @@ const PaginatedPreview = ({
 
   const lineHeight = fontSize * LINE_HEIGHT_RATIO;
   const padding = { x: fontSize * 1.6, y: fontSize * 1.8 };
-  const rawContentHeight = cardHeight - padding.y * 2 - FOOTER_HEIGHT;
+  const footerH = footerEnabled ? FOOTER_HEIGHT : 0;
+  const rawContentHeight = cardHeight - padding.y * 2 - footerH;
   const contentAreaHeight = Math.max(lineHeight, Math.floor(rawContentHeight));
 
   const paginate = useCallback(() => {
@@ -105,63 +115,50 @@ const PaginatedPreview = ({
     if (lines.length === 0) {
       const pageCount = Math.max(1, Math.ceil(totalH / contentAreaHeight));
       setPagination({
-        offsets: Array.from({ length: pageCount }, (_, index) => index * contentAreaHeight),
-        heights: Array.from({ length: pageCount }, (_, index) =>
-          index === pageCount - 1
-            ? Math.max(lineHeight, Math.min(contentAreaHeight, totalH - index * contentAreaHeight))
+        offsets: Array.from({ length: pageCount }, (_, i) => i * contentAreaHeight),
+        heights: Array.from({ length: pageCount }, (_, i) =>
+          i === pageCount - 1
+            ? Math.max(lineHeight, Math.min(contentAreaHeight, totalH - i * contentAreaHeight))
             : contentAreaHeight
         ),
       });
       return;
     }
 
+    // Strict whole-line pagination:
+    // A line fits on the current page only if its ENTIRE height (bottom - pageOffset) <= contentAreaHeight.
+    // If a line's bottom exceeds the page, that line starts a new page.
     const offsets: number[] = [0];
     const heights: number[] = [];
     let currentOffset = 0;
-    let lineIndex = 0;
 
-    while (currentOffset < totalH - PAGE_EPSILON) {
-      while (lineIndex < lines.length && lines[lineIndex].bottom <= currentOffset + PAGE_EPSILON) {
-        lineIndex += 1;
-      }
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const lineBottom = line.bottom - currentOffset;
 
-      const limit = currentOffset + contentAreaHeight - PAGE_EPSILON;
-      const overflowingLine = lines.slice(lineIndex).find((line) => line.bottom > limit);
+      // If this line's bottom exceeds the content area, start a new page at this line's top
+      if (lineBottom > contentAreaHeight + PAGE_EPSILON && i > 0) {
+        // Close current page: height is from currentOffset to the top of this overflowing line
+        const pageH = Math.max(lineHeight, line.top - currentOffset);
+        heights.push(Math.min(contentAreaHeight, pageH));
 
-      if (!overflowingLine) {
-        heights.push(Math.max(lineHeight, Math.min(contentAreaHeight, totalH - currentOffset)));
-        break;
-      }
-
-      const nextOffset = overflowingLine.top;
-      const pageHeight = Math.max(
-        lineHeight,
-        Math.min(contentAreaHeight, nextOffset - currentOffset)
-      );
-
-      if (nextOffset <= currentOffset + PAGE_EPSILON || pageHeight >= contentAreaHeight) {
-        heights.push(contentAreaHeight);
-        currentOffset += contentAreaHeight;
-      } else {
-        heights.push(pageHeight);
-        currentOffset = nextOffset;
-      }
-
-      if (currentOffset < totalH - PAGE_EPSILON) {
+        // Start new page at this line's top
+        currentOffset = line.top;
         offsets.push(currentOffset);
       }
     }
 
-    setPagination({
-      offsets,
-      heights: heights.length === offsets.length ? heights : [...heights, contentAreaHeight],
-    });
+    // Close last page
+    const lastPageH = Math.max(lineHeight, Math.min(contentAreaHeight, totalH - currentOffset));
+    heights.push(lastPageH);
+
+    setPagination({ offsets, heights });
   }, [contentAreaHeight, lineHeight]);
 
   useEffect(() => {
     const timer = setTimeout(paginate, 50);
     return () => clearTimeout(timer);
-  }, [html, paginate, fontSize, cardWidth, cardHeight]);
+  }, [html, paginate, fontSize, cardWidth, cardHeight, footerEnabled]);
 
   useEffect(() => {
     if (editableRef.current && contentRef) {
@@ -307,31 +304,29 @@ const PaginatedPreview = ({
                     )}
                   </div>
                 </div>
-                <div
-                  style={{
-                    height: FOOTER_HEIGHT,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    fontSize: "10px",
-                    color: "#C8A951",
-                    letterSpacing: "0.02em",
-                    flexShrink: 0,
-                    margin: `0 -${padding.x}px`,
-                    padding: `0 ${padding.x}px`,
-                  }}
-                >
-                  <span
-                    contentEditable
-                    suppressContentEditableWarning
-                    style={{ opacity: 0.85, outline: "none", cursor: "text" }}
+                {footerEnabled && (
+                  <div
+                    style={{
+                      height: FOOTER_HEIGHT,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      fontSize: "10px",
+                      color: footerColor,
+                      letterSpacing: "0.02em",
+                      flexShrink: 0,
+                      margin: `0 -${padding.x}px`,
+                      padding: `0 ${padding.x}px`,
+                    }}
                   >
-                    页脚可以在这里编辑或删除
-                  </span>
-                  {totalPages > 1 && (
-                    <span style={{ opacity: 0.7 }}>{idx + 1}/{totalPages}</span>
-                  )}
-                </div>
+                    <span style={{ opacity: 0.85 }}>
+                      {footerText}
+                    </span>
+                    {totalPages > 1 && (
+                      <span style={{ opacity: 0.7 }}>{idx + 1}/{totalPages}</span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           );
