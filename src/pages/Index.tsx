@@ -114,7 +114,10 @@ const RatioSelector = ({
 
 const Index = () => {
   const drafts = useDrafts(DEFAULT_MARKDOWN);
+  const customTemplates = useCustomTemplates();
   const [showDraftList, setShowDraftList] = useState(false);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
   const draftDropdownRef = useRef<HTMLDivElement>(null);
 
   // Close draft dropdown on click outside
