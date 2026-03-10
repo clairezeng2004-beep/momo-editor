@@ -27,14 +27,15 @@ const FOOTER_HEIGHT = 28;
 const LINE_HEIGHT_RATIO = 2;
 const PAGE_EPSILON = 1;
 
-const getTextLineRects = (container: HTMLDivElement) => {
+const getContentRects = (container: HTMLDivElement) => {
   const containerRect = container.getBoundingClientRect();
+  const rects: Array<{ top: number; bottom: number }> = [];
+
+  // 1. Collect text line rects
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
     acceptNode: (node) =>
       node.textContent?.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT,
   });
-
-  const rects: Array<{ top: number; bottom: number }> = [];
 
   while (walker.nextNode()) {
     const textNode = walker.currentNode;
@@ -48,6 +49,21 @@ const getTextLineRects = (container: HTMLDivElement) => {
       if (bottom - top > 1) {
         rects.push({ top, bottom });
       }
+    }
+  }
+
+  // 2. Also collect rects from non-text block elements (hr, img, canvas, svg, etc.)
+  const blockEls = container.querySelectorAll("hr, img, canvas, svg, video, iframe");
+  for (const el of Array.from(blockEls)) {
+    const elRect = el.getBoundingClientRect();
+    const top = elRect.top - containerRect.top;
+    const bottom = elRect.bottom - containerRect.top;
+    // Include margin space
+    const style = window.getComputedStyle(el);
+    const marginTop = parseFloat(style.marginTop) || 0;
+    const marginBottom = parseFloat(style.marginBottom) || 0;
+    if (bottom - top > 0) {
+      rects.push({ top: top - marginTop, bottom: bottom + marginBottom });
     }
   }
 
@@ -125,7 +141,7 @@ const PaginatedPreview = ({
       return;
     }
 
-    const lines = getTextLineRects(container);
+    const lines = getContentRects(container);
 
     if (lines.length === 0) {
       const pageCount = Math.max(1, Math.ceil(totalH / contentAreaHeight));
