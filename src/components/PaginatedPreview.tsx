@@ -327,41 +327,43 @@ const PaginatedPreview = ({
                       isolation: "isolate",
                     }}
                   >
-                    {idx === 0 ? (
-                      <div
-                        ref={editableRef}
-                        className="markdown-body"
-                        contentEditable
-                        suppressContentEditableWarning
-                        onInput={handleInput}
-                        onFocus={handleFocus}
-                        onBlur={handleBlur}
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          transform: `translateY(-${pageOffset}px)`,
-                          transformOrigin: "top left",
-                          outline: "none",
-                          cursor: "text",
-                          ...contentTextStyle,
-                        }}
-                      />
-                    ) : (
-                      <div
-                        className="markdown-body"
-                        dangerouslySetInnerHTML={{ __html: html }}
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          transform: `translateY(-${pageOffset}px)`,
-                          transformOrigin: "top left",
-                          pointerEvents: "none",
-                          ...contentTextStyle,
-                        }}
-                      />
-                    )}
+                      {idx === 0 ? (
+                        <div
+                          ref={editableRef}
+                          className="markdown-body"
+                          contentEditable
+                          suppressContentEditableWarning
+                          onInput={handleInput}
+                          onFocus={handleFocus}
+                          onBlur={handleBlur}
+                          onWheel={(e) => e.stopPropagation()}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            transform: `translateY(-${pageOffset}px)`,
+                            transformOrigin: "top left",
+                            outline: "none",
+                            cursor: "text",
+                            ...contentTextStyle,
+                          }}
+                        />
+                      ) : (
+                        <div
+                          className="markdown-body"
+                          dangerouslySetInnerHTML={{ __html: html }}
+                          onWheel={(e) => e.stopPropagation()}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            transform: `translateY(-${pageOffset}px)`,
+                            transformOrigin: "top left",
+                            pointerEvents: "none",
+                            ...contentTextStyle,
+                          }}
+                        />
+                      )}
                   </div>
                 </div>
                 {footerEnabled && (

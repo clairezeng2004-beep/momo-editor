@@ -968,7 +968,7 @@ const Index = () => {
       <div className="flex-1 hidden lg:flex overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-            <aside className="h-full overflow-y-auto bg-card/60">
+            <aside className="h-full overflow-y-auto overscroll-contain bg-card/60">
               {sidebarContent}
             </aside>
           </ResizablePanel>
