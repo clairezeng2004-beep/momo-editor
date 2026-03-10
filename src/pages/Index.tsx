@@ -531,6 +531,14 @@ const Index = () => {
           className="w-full accent-foreground h-1 appearance-none bg-border rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:cursor-pointer"
         />
       </CollapsibleSection>
+
+      <button
+        onClick={() => setShowDefaultEditor(true)}
+        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+      >
+        <Settings2 className="w-3.5 h-3.5" />
+        编辑默认文本
+      </button>
     </div>
   );
 
