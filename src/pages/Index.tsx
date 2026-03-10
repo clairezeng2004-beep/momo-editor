@@ -1,10 +1,17 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { toPng } from "html-to-image";
 import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
-import { Download, Type, Ratio, Eye, Edit3 } from "lucide-react";
+import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2 } from "lucide-react";
 import FormatToolbar from "@/components/FormatToolbar";
+import FloatingToolbar from "@/components/FloatingToolbar";
+import { useHistory } from "@/hooks/use-history";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 
 const CARD_WIDTH = 420;
 
@@ -74,14 +81,18 @@ const RatioSelector = ({
 );
 
 const Index = () => {
-  const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
+  const history = useHistory(DEFAULT_MARKDOWN);
+  const markdown = history.value;
   const [template, setTemplate] = useState(TEMPLATES[0]);
   const [ratio, setRatio] = useState(ASPECT_RATIOS[0]);
   const [fontSize, setFontSize] = useState(16);
   const [textAlign, setTextAlign] = useState<"justify" | "left" | "center">("justify");
   const [showEditor, setShowEditor] = useState(true);
   const [exporting, setExporting] = useState(false);
+  // When user edits directly in preview, we store overridden HTML
+  const [directHtml, setDirectHtml] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
@@ -89,6 +100,41 @@ const Index = () => {
   const getHtml = useCallback(() => {
     return marked.parse(markdown, { async: false }) as string;
   }, [markdown]);
+
+  // When markdown changes from textarea, reset directHtml
+  const handleMarkdownChange = useCallback(
+    (newValue: string) => {
+      history.push(newValue);
+      setDirectHtml(null);
+    },
+    [history]
+  );
+
+  // When preview is directly edited
+  const handleContentChange = useCallback(() => {
+    if (contentRef.current) {
+      setDirectHtml(contentRef.current.innerHTML);
+    }
+  }, []);
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        if (e.shiftKey) {
+          e.preventDefault();
+          history.redo();
+          setDirectHtml(null);
+        } else {
+          e.preventDefault();
+          history.undo();
+          setDirectHtml(null);
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [history]);
 
   const handleExport = async () => {
     if (!cardRef.current) return;
@@ -109,6 +155,156 @@ const Index = () => {
       setExporting(false);
     }
   };
+
+  const renderedHtml = directHtml ?? getHtml();
+
+  const sidebarContent = (
+    <>
+      <div className="p-5 space-y-6">
+        {/* Template */}
+        <section>
+          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+            <Eye className="w-3.5 h-3.5" /> 样式
+          </h2>
+          <TemplateSelector selected={template} onSelect={setTemplate} />
+        </section>
+
+        {/* Ratio */}
+        <section>
+          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+            <Ratio className="w-3.5 h-3.5" /> 比例
+          </h2>
+          <RatioSelector selected={ratio} onSelect={setRatio} />
+        </section>
+
+        {/* Font size */}
+        <section>
+          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+            <Type className="w-3.5 h-3.5" /> 字号 ({fontSize}px)
+          </h2>
+          <input
+            type="range"
+            min={12}
+            max={24}
+            value={fontSize}
+            onChange={(e) => setFontSize(Number(e.target.value))}
+            className="w-full accent-foreground"
+          />
+        </section>
+
+        {/* Text align */}
+        <section>
+          <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+            <Type className="w-3.5 h-3.5" /> 对齐
+          </h2>
+          <div className="flex gap-1.5">
+            {([["justify", "两端对齐"], ["left", "左对齐"], ["center", "居中"]] as const).map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => setTextAlign(value)}
+                className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                  textAlign === value
+                    ? "bg-foreground text-background font-medium"
+                    : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Toggle editor on mobile */}
+        <button
+          onClick={() => setShowEditor(!showEditor)}
+          className="lg:hidden w-full flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-4 py-2.5 rounded-lg text-sm font-medium"
+        >
+          <Edit3 className="w-4 h-4" />
+          {showEditor ? "隐藏编辑器" : "显示编辑器"}
+        </button>
+      </div>
+
+      {/* Editor */}
+      <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border`}>
+        <div className="p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+              <Edit3 className="w-3.5 h-3.5" /> Markdown 编辑
+            </h2>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => { history.undo(); setDirectHtml(null); }}
+                disabled={!history.canUndo}
+                className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                title="撤销 (Ctrl+Z)"
+              >
+                <Undo2 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => { history.redo(); setDirectHtml(null); }}
+                disabled={!history.canRedo}
+                className="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                title="重做 (Ctrl+Shift+Z)"
+              >
+                <Redo2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+          <FormatToolbar
+            textareaRef={textareaRef}
+            markdown={markdown}
+            onChange={handleMarkdownChange}
+          />
+          <textarea
+            ref={textareaRef}
+            value={markdown}
+            onChange={(e) => handleMarkdownChange(e.target.value)}
+            className="w-full h-64 lg:h-80 bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
+            placeholder="在此输入 Markdown 内容..."
+          />
+        </div>
+      </div>
+    </>
+  );
+
+  const previewContent = (
+    <div className="flex-1 overflow-auto flex items-start justify-center p-6 lg:p-10 bg-background">
+      <div className="flex flex-col items-center gap-4">
+        <p className="text-xs text-muted-foreground">
+          预览 · {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
+          <span className="ml-2 opacity-60">（可选中文字直接改色/加粗）</span>
+        </p>
+        <div
+          ref={cardRef}
+          className={`${template.className} shadow-2xl relative`}
+          style={{
+            width: CARD_WIDTH,
+            minHeight: cardHeight,
+            fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
+            fontSize: `${fontSize}px`,
+            padding: `${fontSize * 2.2}px ${fontSize * 1.8}px`,
+            borderRadius: 0,
+            boxSizing: "border-box",
+            textAlign: textAlign,
+          }}
+        >
+          <FloatingToolbar
+            containerRef={cardRef}
+            onContentChange={handleContentChange}
+          />
+          <div
+            ref={contentRef}
+            className="markdown-body"
+            contentEditable
+            suppressContentEditableWarning
+            dangerouslySetInnerHTML={{ __html: renderedHtml }}
+            onInput={handleContentChange}
+            style={{ outline: "none" }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -131,123 +327,26 @@ const Index = () => {
         </button>
       </header>
 
-      {/* Main */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Sidebar controls */}
-        <aside className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-border bg-card overflow-y-auto shrink-0">
-          <div className="p-5 space-y-6">
-            {/* Template */}
-            <section>
-              <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-                <Eye className="w-3.5 h-3.5" /> 样式
-              </h2>
-              <TemplateSelector selected={template} onSelect={setTemplate} />
-            </section>
-
-            {/* Ratio */}
-            <section>
-              <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-                <Ratio className="w-3.5 h-3.5" /> 比例
-              </h2>
-              <RatioSelector selected={ratio} onSelect={setRatio} />
-            </section>
-
-            {/* Font size */}
-            <section>
-              <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-                <Type className="w-3.5 h-3.5" /> 字号 ({fontSize}px)
-              </h2>
-              <input
-                type="range"
-                min={12}
-                max={24}
-                value={fontSize}
-                onChange={(e) => setFontSize(Number(e.target.value))}
-                className="w-full accent-foreground"
-              />
-            </section>
-
-            {/* Text align */}
-            <section>
-              <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-                <Type className="w-3.5 h-3.5" /> 对齐
-              </h2>
-              <div className="flex gap-1.5">
-                {([["justify", "两端对齐"], ["left", "左对齐"], ["center", "居中"]] as const).map(([value, label]) => (
-                  <button
-                    key={value}
-                    onClick={() => setTextAlign(value)}
-                    className={`px-3 py-1.5 rounded-md text-sm transition-all ${
-                      textAlign === value
-                        ? "bg-foreground text-background font-medium"
-                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* Toggle editor on mobile */}
-            <button
-              onClick={() => setShowEditor(!showEditor)}
-              className="lg:hidden w-full flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-4 py-2.5 rounded-lg text-sm font-medium"
-            >
-              <Edit3 className="w-4 h-4" />
-              {showEditor ? "隐藏编辑器" : "显示编辑器"}
-            </button>
-          </div>
-
-          {/* Editor */}
-          <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border`}>
-          <div className="p-5 space-y-3">
-              <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-                <Edit3 className="w-3.5 h-3.5" /> Markdown 编辑
-              </h2>
-              <FormatToolbar
-                textareaRef={textareaRef}
-                markdown={markdown}
-                onChange={setMarkdown}
-              />
-              <textarea
-                ref={textareaRef}
-                value={markdown}
-                onChange={(e) => setMarkdown(e.target.value)}
-                className="w-full h-64 lg:h-80 bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
-                placeholder="在此输入 Markdown 内容..."
-              />
-            </div>
-          </div>
+      {/* Main - Desktop uses resizable panels */}
+      <div className="flex-1 flex flex-col lg:hidden overflow-hidden">
+        <aside className="w-full border-b border-border bg-card overflow-y-auto shrink-0">
+          {sidebarContent}
         </aside>
+        {previewContent}
+      </div>
 
-        {/* Preview area */}
-        <main className="flex-1 overflow-auto flex items-start justify-center p-6 lg:p-10 bg-background">
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-xs text-muted-foreground">
-              预览 · {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
-            </p>
-            <div
-              ref={cardRef}
-              className={`${template.className} shadow-2xl`}
-              style={{
-                width: CARD_WIDTH,
-                minHeight: cardHeight,
-                fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
-                fontSize: `${fontSize}px`,
-                padding: `${fontSize * 2.2}px ${fontSize * 1.8}px`,
-                borderRadius: 0,
-                boxSizing: "border-box",
-                textAlign: textAlign,
-              }}
-            >
-              <div
-                className="markdown-body"
-                dangerouslySetInnerHTML={{ __html: getHtml() }}
-              />
-            </div>
-          </div>
-        </main>
+      <div className="flex-1 hidden lg:flex overflow-hidden">
+        <ResizablePanelGroup direction="horizontal">
+          <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+            <aside className="h-full overflow-y-auto bg-card">
+              {sidebarContent}
+            </aside>
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize={70}>
+            {previewContent}
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </div>
   );
