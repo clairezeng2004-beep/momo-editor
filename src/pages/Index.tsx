@@ -204,7 +204,7 @@ const Index = () => {
                 minHeight: cardHeight,
                 fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
                 fontSize: `${fontSize}px`,
-                padding: `${fontSize * 2.5}px ${fontSize * 2}px`,
+                padding: `${fontSize * 2.5}px ${fontSize * 1.5}px`,
                 borderRadius: 0,
                 boxSizing: "border-box",
               }}
