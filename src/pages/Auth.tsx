@@ -79,7 +79,7 @@ const Auth = () => {
             Google
           </button>
           <button
-            onClick={handleAppleLogin}
+            onClick={() => handleOAuthLogin("apple")}
             className="flex items-center justify-center gap-2 bg-card border border-border rounded-xl px-4 py-3 text-sm font-medium hover:bg-secondary/60 transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
