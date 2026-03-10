@@ -115,9 +115,9 @@
 
 /* Markdown rendered content styles */
 .markdown-body {
-  line-height: 2.1;
+  line-height: 2.0;
   word-break: break-word;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
 }
 
 .markdown-body h1 {
