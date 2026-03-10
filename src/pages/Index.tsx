@@ -244,14 +244,21 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, [markdown, template.id, ratio.id, fontSize, drafts.currentDraftId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-resize textarea
-  useEffect(() => {
+  const syncTextareaHeight = useCallback(() => {
     const el = textareaRef.current;
-    if (el) {
-      el.style.height = 'auto';
-      el.style.height = `${el.scrollHeight}px`;
-    }
-  }, [markdown]);
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
+
+  useLayoutEffect(() => {
+    syncTextareaHeight();
+  }, [markdown, isMobile, showSettingsSheet, syncTextareaHeight]);
+
+  useEffect(() => {
+    window.addEventListener("resize", syncTextareaHeight);
+    return () => window.removeEventListener("resize", syncTextareaHeight);
+  }, [syncTextareaHeight]);
 
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
 
