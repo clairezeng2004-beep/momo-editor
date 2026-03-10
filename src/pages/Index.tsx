@@ -82,18 +82,59 @@ const RatioSelector = ({
 );
 
 const Index = () => {
-  const history = useHistory(DEFAULT_MARKDOWN);
+  const drafts = useDrafts(DEFAULT_MARKDOWN);
+  const [showDraftList, setShowDraftList] = useState(false);
+
+  // Initialize: load current draft or create one
+  useEffect(() => {
+    if (drafts.drafts.length === 0) {
+      drafts.createDraft();
+    } else if (!drafts.currentDraftId) {
+      drafts.switchDraft(drafts.drafts[0].id);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const currentDraft = drafts.getCurrentDraft();
+  const history = useHistory(currentDraft?.markdown ?? DEFAULT_MARKDOWN);
   const markdown = history.value;
-  const [template, setTemplate] = useState(TEMPLATES[0]);
-  const [ratio, setRatio] = useState(ASPECT_RATIOS[0]);
-  const [fontSize, setFontSize] = useState(16);
+  const [template, setTemplate] = useState(() =>
+    TEMPLATES.find((t) => t.id === currentDraft?.templateId) ?? TEMPLATES[0]
+  );
+  const [ratio, setRatio] = useState(() =>
+    ASPECT_RATIOS.find((r) => r.id === currentDraft?.ratioId) ?? ASPECT_RATIOS[0]
+  );
+  const [fontSize, setFontSize] = useState(currentDraft?.fontSize ?? 15);
   const [textAlign] = useState<"justify" | "left" | "center">("justify");
   const [showEditor, setShowEditor] = useState(true);
   const [exporting, setExporting] = useState(false);
-  // When user edits directly in preview, we store overridden HTML
   const [directHtml, setDirectHtml] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // When switching drafts, reload state
+  const prevDraftIdRef = useRef(drafts.currentDraftId);
+  useEffect(() => {
+    if (drafts.currentDraftId && drafts.currentDraftId !== prevDraftIdRef.current) {
+      const d = drafts.getCurrentDraft();
+      if (d) {
+        history.reset(d.markdown);
+        setTemplate(TEMPLATES.find((t) => t.id === d.templateId) ?? TEMPLATES[0]);
+        setRatio(ASPECT_RATIOS.find((r) => r.id === d.ratioId) ?? ASPECT_RATIOS[0]);
+        setFontSize(d.fontSize);
+        setDirectHtml(null);
+      }
+    }
+    prevDraftIdRef.current = drafts.currentDraftId;
+  }, [drafts.currentDraftId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save draft on changes (debounced)
+  useEffect(() => {
+    if (!drafts.currentDraftId) return;
+    const timer = setTimeout(() => {
+      drafts.updateDraft(markdown, template.id, ratio.id, fontSize);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [markdown, template.id, ratio.id, fontSize, drafts.currentDraftId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
 
