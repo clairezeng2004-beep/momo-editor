@@ -515,15 +515,18 @@ const Index = () => {
   const mobileScale = isMobile ? Math.min(1, (window.innerWidth - 48) / CARD_WIDTH) : 1;
 
   const previewContent = (
-    <div className="flex-1 overflow-auto flex flex-col items-center p-4 lg:p-10 bg-background/80">
-      {/* Fixed toolbar above preview */}
-      <div className="sticky top-0 z-10 mb-3 w-full max-w-lg">
-        <FloatingToolbar
-          containerRef={contentRef}
-          onContentChange={handleContentChange}
-        />
+    <div className="flex-1 overflow-auto flex flex-col items-center bg-background/80 relative">
+      {/* Fixed toolbar above preview - stays at top of scroll container */}
+      <div className="sticky top-0 z-10 w-full bg-background/95 backdrop-blur-sm py-2 px-4 lg:px-10 flex justify-center">
+        <div className="w-full max-w-lg">
+          <FloatingToolbar
+            containerRef={contentRef}
+            onContentChange={handleContentChange}
+          />
+        </div>
       </div>
-      <p className="text-[11px] text-muted-foreground/70 text-center font-medium tracking-wide mb-4">
+      <div className="px-4 lg:px-10 w-full flex flex-col items-center">
+      <p className="text-[11px] text-muted-foreground/70 text-center font-medium tracking-wide mb-4 mt-2">
         {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
         <span className="ml-2 hidden sm:inline">选中文字使用上方工具栏</span>
       </p>
@@ -541,6 +544,7 @@ const Index = () => {
           directHtml={directHtml}
           markdown={markdown}
         />
+      </div>
       </div>
     </div>
   );
