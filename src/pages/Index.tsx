@@ -425,15 +425,16 @@ const Index = () => {
             />
             <div className="mt-3">
             <textarea
-              ref={textareaRef}
+              ref={(el) => {
+                (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
+                if (el) {
+                  el.style.height = 'auto';
+                  el.style.height = `${el.scrollHeight}px`;
+                }
+              }}
               value={markdown}
               onChange={(e) => {
                 handleMarkdownChange(e.target.value);
-                const el = e.target;
-                el.style.height = 'auto';
-                el.style.height = `${el.scrollHeight}px`;
-              }}
-              onFocus={(e) => {
                 const el = e.target;
                 el.style.height = 'auto';
                 el.style.height = `${el.scrollHeight}px`;
