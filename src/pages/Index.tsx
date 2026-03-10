@@ -618,6 +618,7 @@ const Index = () => {
               handleMarkdownChange(e.target.value);
             }}
             onInput={syncTextareaHeight}
+            onWheel={(e) => e.stopPropagation()}
             className="w-full bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
             placeholder="在此输入内容，直接换行即可分段..."
             style={{ overflow: 'hidden' }}
@@ -790,7 +791,7 @@ const Index = () => {
   const mobileScale = isMobile ? Math.min(1, (window.innerWidth - 48) / CARD_WIDTH) : 1;
 
   const previewContent = (
-    <div className="flex-1 overflow-auto flex flex-col items-center bg-background/80 relative">
+    <div className="flex-1 overflow-auto overscroll-contain flex flex-col items-center bg-background/80 relative">
       {/* Fixed toolbar above preview - stays at top of scroll container */}
       <div className="sticky top-0 z-10 w-full bg-background/95 backdrop-blur-sm py-2 px-4 lg:px-10 flex justify-center">
         <div className="w-full max-w-lg">
@@ -863,7 +864,7 @@ const Index = () => {
                 <Menu className="w-4.5 h-4.5 text-foreground/80" />
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[220px] max-w-[62vw] p-0 overflow-y-auto sm:w-[240px] sm:max-w-[55vw]">
+            <SheetContent side="left" className="w-[220px] max-w-[62vw] p-0 overflow-y-auto overscroll-contain sm:w-[240px] sm:max-w-[55vw]">
               <div className="pt-12">
                 {settingsContent}
                 {mobileColorPicker}
@@ -955,7 +956,7 @@ const Index = () => {
       {/* Main - Desktop uses resizable panels */}
       {/* Mobile layout - preview only, no sidebar */}
       <div className="flex-1 flex flex-col lg:hidden overflow-hidden">
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overscroll-contain">
           {previewContent}
           {/* Tablet: show editor below preview */}
           <div className="hidden md:block lg:hidden">
@@ -967,7 +968,7 @@ const Index = () => {
       <div className="flex-1 hidden lg:flex overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
           <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
-            <aside className="h-full overflow-y-auto bg-card/60">
+            <aside className="h-full overflow-y-auto overscroll-contain bg-card/60">
               {sidebarContent}
             </aside>
           </ResizablePanel>
