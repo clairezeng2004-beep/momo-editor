@@ -58,7 +58,6 @@ const getContentRects = (container: HTMLDivElement) => {
     const elRect = el.getBoundingClientRect();
     const top = elRect.top - containerRect.top;
     const bottom = elRect.bottom - containerRect.top;
-    // Include margin space
     const style = window.getComputedStyle(el);
     const marginTop = parseFloat(style.marginTop) || 0;
     const marginBottom = parseFloat(style.marginBottom) || 0;
@@ -72,14 +71,22 @@ const getContentRects = (container: HTMLDivElement) => {
   return rects.reduce<Array<{ top: number; bottom: number }>>((lines, rect) => {
     const last = lines[lines.length - 1];
 
-    if (
-      !last ||
-      Math.abs(last.top - rect.top) > PAGE_EPSILON ||
-      Math.abs(last.bottom - rect.bottom) > PAGE_EPSILON
-    ) {
+    // Merge by vertical overlap / near-overlap, not exact top/bottom.
+    // This prevents the same visual line from being split into multiple entries
+    // when it contains bold/italic spans with slightly different metrics.
+    if (!last) {
       lines.push({ top: rect.top, bottom: rect.bottom });
-    } else {
+      return lines;
+    }
+
+    const overlapsVertically = rect.top <= last.bottom - PAGE_EPSILON;
+    const isNearSameLine = Math.abs(rect.top - last.top) <= 6;
+
+    if (overlapsVertically || isNearSameLine) {
+      last.top = Math.min(last.top, rect.top);
       last.bottom = Math.max(last.bottom, rect.bottom);
+    } else {
+      lines.push({ top: rect.top, bottom: rect.bottom });
     }
 
     return lines;
@@ -168,16 +175,19 @@ const PaginatedPreview = ({
       const relativeBottom = absoluteBottom - currentOffset;
 
       if (relativeBottom > contentAreaHeight + PAGE_EPSILON) {
-        const pageHeight = Math.max(
-          lineHeight,
-          Math.min(contentAreaHeight, lastFittingBottom - currentOffset)
+        const pageBottom = Math.max(
+          currentOffset + lineHeight,
+          Math.min(currentOffset + contentAreaHeight, lastFittingBottom)
         );
-        heights.push(pageHeight);
-        currentOffset = absoluteTop;
+
+        heights.push(pageBottom - currentOffset);
+        currentOffset = pageBottom;
         offsets.push(currentOffset);
       }
 
-      lastFittingBottom = Math.max(lastFittingBottom, absoluteBottom);
+      if (absoluteTop >= currentOffset - PAGE_EPSILON) {
+        lastFittingBottom = Math.max(lastFittingBottom, absoluteBottom);
+      }
     }
 
     const finalHeight = Math.max(
