@@ -511,7 +511,7 @@ const Index = () => {
         editingTemplate={editingTemplate}
       />
       {/* Header */}
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0 relative z-[200]">
         <div className="flex items-center gap-3">
           <div className="w-7 h-7 rounded-lg bg-foreground/90 flex items-center justify-center">
             <Type className="w-3.5 h-3.5 text-background" />
