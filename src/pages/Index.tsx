@@ -159,6 +159,7 @@ const Index = () => {
   const navigate = useNavigate();
   const drafts = useCloudDrafts(DEFAULT_MARKDOWN);
   const customTemplates = useCustomTemplates();
+  const isMobile = useIsMobile();
   const [showDraftList, setShowDraftList] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
