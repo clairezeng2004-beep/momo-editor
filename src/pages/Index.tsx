@@ -789,7 +789,7 @@ const Index = () => {
   const mobileScale = isMobile ? Math.min(1, (window.innerWidth - 48) / CARD_WIDTH) : 1;
 
   const previewContent = (
-    <div className="flex-1 overflow-auto overscroll-contain flex flex-col items-center bg-background/80 relative">
+    <div className="h-full overflow-y-auto overscroll-contain flex flex-col items-center bg-background/80 relative">
       {/* Fixed toolbar above preview - stays at top of scroll container */}
       <div className="sticky top-0 z-10 w-full bg-background/95 backdrop-blur-sm py-2 px-4 lg:px-10 flex justify-center">
         <div className="w-full max-w-lg">
@@ -965,13 +965,13 @@ const Index = () => {
 
       <div className="flex-1 hidden lg:flex overflow-hidden">
         <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={30} minSize={20} maxSize={50}>
+          <ResizablePanel defaultSize={30} minSize={20} maxSize={50} className="!overflow-hidden">
             <aside className="h-full overflow-y-auto overscroll-contain bg-card/60">
               {sidebarContent}
             </aside>
           </ResizablePanel>
           <ResizableHandle withHandle />
-          <ResizablePanel defaultSize={70}>
+          <ResizablePanel defaultSize={70} className="!overflow-hidden">
             {previewContent}
           </ResizablePanel>
         </ResizablePanelGroup>
