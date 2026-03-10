@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useLayoutEffect } from "react";
 import momoLogo from "@/assets/momo-logo.jpg";
 import { toPng } from "html-to-image";
 import { marked } from "marked";
