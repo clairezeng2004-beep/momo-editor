@@ -154,12 +154,21 @@ const RatioSelector = ({
 );
 
 const Index = () => {
-  const drafts = useDrafts(DEFAULT_MARKDOWN);
+  const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const drafts = useCloudDrafts(DEFAULT_MARKDOWN);
   const customTemplates = useCustomTemplates();
   const [showDraftList, setShowDraftList] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
   const draftDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, user, navigate]);
 
   // Close draft dropdown on click outside
   useEffect(() => {
@@ -175,12 +184,13 @@ const Index = () => {
 
   // Initialize: load current draft or create one
   useEffect(() => {
+    if (!drafts.loaded) return;
     if (drafts.drafts.length === 0) {
       drafts.createDraft();
     } else if (!drafts.currentDraftId) {
       drafts.switchDraft(drafts.drafts[0].id);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [drafts.loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentDraft = drafts.getCurrentDraft();
   const history = useHistory(currentDraft?.markdown ?? DEFAULT_MARKDOWN);
