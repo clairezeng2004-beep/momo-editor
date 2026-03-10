@@ -282,9 +282,15 @@ const Index = () => {
           <textarea
             ref={textareaRef}
             value={markdown}
-            onChange={(e) => handleMarkdownChange(e.target.value)}
-            className="w-full h-64 lg:h-80 bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
-            placeholder="在此输入 Markdown 内容..."
+            onChange={(e) => {
+              handleMarkdownChange(e.target.value);
+              // Auto-grow
+              const el = e.target;
+              el.style.height = 'auto';
+              el.style.height = `${Math.max(200, el.scrollHeight)}px`;
+            }}
+            className="w-full min-h-[200px] bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
+            placeholder="在此输入内容，直接换行即可分段..."
           />
         </div>
       </div>
