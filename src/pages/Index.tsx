@@ -415,6 +415,14 @@ const Index = () => {
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false });
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
+  // Auto-resize textarea to fit content
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [markdown]);
 
   const sidebarContent = (
     <>
