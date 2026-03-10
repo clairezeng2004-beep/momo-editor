@@ -216,6 +216,9 @@ const Index = () => {
   const [showEditor, setShowEditor] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [directHtml, setDirectHtml] = useState<string | null>(null);
+  const [footerEnabled, setFooterEnabled] = useState(true);
+  const [footerText, setFooterText] = useState("页脚可以在这里编辑或删除");
+  const [footerColor, setFooterColor] = useState("#C8A951");
   const contentRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
