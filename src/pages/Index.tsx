@@ -334,7 +334,23 @@ const Index = () => {
           <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
             <Eye className="w-3.5 h-3.5" /> 样式
           </h2>
-          <TemplateSelector selected={template} onSelect={setTemplate} />
+          <TemplateSelector
+            selected={template}
+            onSelect={(t) => {
+              setTemplate(t);
+              // Apply custom template's default font size
+              if ("isCustom" in t) {
+                setFontSize((t as CustomTemplate).defaultFontSize);
+              }
+            }}
+            allTemplates={[...TEMPLATES, ...customTemplates.templates]}
+            onCreateNew={() => { setEditingTemplate(null); setShowTemplateEditor(true); }}
+            onEdit={(t) => { setEditingTemplate(t); setShowTemplateEditor(true); }}
+            onDelete={(id) => {
+              customTemplates.deleteTemplate(id);
+              if (template.id === id) setTemplate(TEMPLATES[0]);
+            }}
+          />
         </section>
 
         {/* Ratio */}
