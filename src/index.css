@@ -200,6 +200,7 @@
 
 .markdown-body strong {
   font-weight: 700;
+  color: inherit;
 }
 
 .markdown-body em {
