@@ -385,7 +385,7 @@ const Index = () => {
           />
         </CollapsibleSection>
 
-        <CollapsibleSection id="ratio" icon={Ratio} label="比例">
+        <CollapsibleSection id="ratio" icon={Ratio} label="比例" collapsed={collapsedSections["ratio"] ?? false} onToggle={toggleSection}>
           <RatioSelector selected={ratio} onSelect={setRatio} />
         </CollapsibleSection>
 
