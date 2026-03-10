@@ -82,6 +82,7 @@ const Index = () => {
   const [showEditor, setShowEditor] = useState(true);
   const [exporting, setExporting] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
 
