@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Check, Plus, X, Eye } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Check, Plus, X, Eye, Upload, Pipette } from "lucide-react";
 import { COLOR_PALETTE, type ColorItem } from "@/lib/colors";
 
 const SAMPLE_PARAGRAPHS = [
@@ -21,6 +21,9 @@ const loadFromStorage = <T,>(key: string, fallback: T): T => {
   }
 };
 
+const rgbToHex = (r: number, g: number, b: number) =>
+  "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+
 const ColorPlayground = () => {
   const [selected, setSelected] = useState<Set<string>>(() =>
     new Set(loadFromStorage<string[]>(STORAGE_KEY, ["#2B4C7E", "#D94F4F", "#2A7A4B", "#7B4EA3", "#C7742E", "#4A5E6D"]))
@@ -34,6 +37,13 @@ const ColorPlayground = () => {
   const [newColor, setNewColor] = useState("#5A7D9A");
   const [newLabel, setNewLabel] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // Eyedropper state
+  const [eyedropperImage, setEyedropperImage] = useState<string | null>(null);
+  const [pickedColor, setPickedColor] = useState<string | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...selected]));
