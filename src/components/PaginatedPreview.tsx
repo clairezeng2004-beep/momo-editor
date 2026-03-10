@@ -8,6 +8,7 @@ interface PaginatedPreviewProps {
   fontSize: number;
   textAlign: string;
   templateClassName: string;
+  templateBackground: string;
   onContentChange: () => void;
   contentRef: React.RefObject<HTMLDivElement>;
   directHtml: string | null;
