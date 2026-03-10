@@ -86,7 +86,7 @@ const Index = () => {
   const [template, setTemplate] = useState(TEMPLATES[0]);
   const [ratio, setRatio] = useState(ASPECT_RATIOS[0]);
   const [fontSize, setFontSize] = useState(16);
-  const [textAlign, setTextAlign] = useState<"justify" | "left" | "center">("justify");
+  const [textAlign] = useState<"justify" | "left" | "center">("justify");
   const [showEditor, setShowEditor] = useState(true);
   const [exporting, setExporting] = useState(false);
   // When user edits directly in preview, we store overridden HTML
