@@ -101,10 +101,10 @@ const RatioSelector = ({
       <button
         key={r.id}
         onClick={() => onSelect(r)}
-        className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+        className={`px-3.5 py-1.5 rounded-full text-[13px] transition-all ${
           selected.id === r.id
-            ? "bg-foreground text-background font-medium"
-            : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            ? "bg-foreground text-background font-medium shadow-sm"
+            : "bg-secondary/60 text-secondary-foreground hover:bg-secondary"
         }`}
       >
         {r.label}
