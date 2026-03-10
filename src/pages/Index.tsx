@@ -163,6 +163,11 @@ const Index = () => {
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
   const draftDropdownRef = useRef<HTMLDivElement>(null);
+  const eyedropperFileRef = useRef<HTMLInputElement>(null);
+  const eyedropperCanvasRef = useRef<HTMLCanvasElement>(null);
+  const eyedropperImgRef = useRef<HTMLImageElement>(null);
+  const [eyedropperImage, setEyedropperImage] = useState<string | null>(null);
+  const [pickedColor, setPickedColor] = useState<string | null>(null);
 
   // Redirect to auth if not logged in
   useEffect(() => {
