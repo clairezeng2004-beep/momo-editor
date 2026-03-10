@@ -1,68 +1,6 @@
 import { useState, useEffect } from "react";
-import { Check, Plus, X } from "lucide-react";
-
-const COLOR_PALETTE = {
-  "蓝色系": [
-    { label: "深海蓝", color: "#1B3A5C" },
-    { label: "靛青", color: "#2B4C7E" },
-    { label: "钴蓝", color: "#2456A4" },
-    { label: "皇家蓝", color: "#3A5BA0" },
-    { label: "天青", color: "#4A90D9" },
-    { label: "湖蓝", color: "#2980B9" },
-    { label: "青石", color: "#34697A" },
-    { label: "雾蓝", color: "#5B7F95" },
-  ],
-  "红色系": [
-    { label: "酒红", color: "#8B2252" },
-    { label: "砖红", color: "#A0522D" },
-    { label: "赤陶", color: "#C0503A" },
-    { label: "珊瑚红", color: "#D94F4F" },
-    { label: "胭脂", color: "#C44569" },
-    { label: "玫红", color: "#D63384" },
-    { label: "柿红", color: "#E25822" },
-    { label: "朱砂", color: "#CC3333" },
-  ],
-  "绿色系": [
-    { label: "松柏绿", color: "#1A5E3A" },
-    { label: "森林绿", color: "#2A7A4B" },
-    { label: "翡翠", color: "#2E8B57" },
-    { label: "橄榄绿", color: "#556B2F" },
-    { label: "苔藓", color: "#4A7C59" },
-    { label: "薄荷", color: "#3AA278" },
-    { label: "青竹", color: "#2D8E6F" },
-    { label: "鼠尾草", color: "#6B8E6B" },
-  ],
-  "紫色系": [
-    { label: "深紫", color: "#5B2C6F" },
-    { label: "雅紫", color: "#7B4EA3" },
-    { label: "薰衣草", color: "#7C5CBF" },
-    { label: "丁香", color: "#9B6DB7" },
-    { label: "紫藤", color: "#8E6BBE" },
-    { label: "葡萄紫", color: "#6A3D9A" },
-    { label: "梅紫", color: "#8B458B" },
-    { label: "鸢尾紫", color: "#6C5B9E" },
-  ],
-  "橙/棕色系": [
-    { label: "琥珀橙", color: "#C7742E" },
-    { label: "焦糖", color: "#A0692E" },
-    { label: "肉桂", color: "#B5651D" },
-    { label: "蜂蜜", color: "#B8860B" },
-    { label: "铜棕", color: "#9C5935" },
-    { label: "陶土", color: "#A86540" },
-    { label: "姜黄", color: "#C49000" },
-    { label: "赭石", color: "#8B6914" },
-  ],
-  "灰/中性色": [
-    { label: "墨黑", color: "#1C1C1E" },
-    { label: "炭灰", color: "#333333" },
-    { label: "石板灰", color: "#4A5E6D" },
-    { label: "铅灰", color: "#5C6B77" },
-    { label: "暖灰", color: "#6B6256" },
-    { label: "冷灰", color: "#6C7A89" },
-    { label: "银鼠", color: "#848484" },
-    { label: "烟灰", color: "#708090" },
-  ],
-};
+import { Check, Plus, X, Eye } from "lucide-react";
+import { COLOR_PALETTE, type ColorItem } from "@/lib/colors";
 
 const SAMPLE_PARAGRAPHS = [
   "与其在模型层内卷，不如想想怎么把 Context 喂得更优雅。好的 Prompt 工程就像好的产品设计——看似简单，背后是大量的迭代和取舍。",
@@ -72,6 +10,7 @@ const SAMPLE_PARAGRAPHS = [
 
 const STORAGE_KEY = "color-playground-selected";
 const CUSTOM_COLORS_KEY = "color-playground-custom";
+const COMPARE_KEY = "color-playground-compare";
 
 const loadFromStorage = <T,>(key: string, fallback: T): T => {
   try {
@@ -86,14 +25,16 @@ const ColorPlayground = () => {
   const [selected, setSelected] = useState<Set<string>>(() =>
     new Set(loadFromStorage<string[]>(STORAGE_KEY, ["#2B4C7E", "#D94F4F", "#2A7A4B", "#7B4EA3", "#C7742E", "#4A5E6D"]))
   );
-  const [customColors, setCustomColors] = useState<{ label: string; color: string }[]>(() =>
+  const [comparing, setComparing] = useState<Set<string>>(() =>
+    new Set(loadFromStorage<string[]>(COMPARE_KEY, []))
+  );
+  const [customColors, setCustomColors] = useState<ColorItem[]>(() =>
     loadFromStorage(CUSTOM_COLORS_KEY, [])
   );
   const [newColor, setNewColor] = useState("#5A7D9A");
   const [newLabel, setNewLabel] = useState("");
   const [showAddForm, setShowAddForm] = useState(false);
 
-  // Persist selections
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...selected]));
   }, [selected]);
@@ -102,8 +43,26 @@ const ColorPlayground = () => {
     localStorage.setItem(CUSTOM_COLORS_KEY, JSON.stringify(customColors));
   }, [customColors]);
 
+  useEffect(() => {
+    localStorage.setItem(COMPARE_KEY, JSON.stringify([...comparing]));
+  }, [comparing]);
+
   const toggle = (color: string) => {
     setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(color)) {
+        next.delete(color);
+        // Also remove from comparing
+        setComparing((cp) => { const n = new Set(cp); n.delete(color); return n; });
+      } else {
+        next.add(color);
+      }
+      return next;
+    });
+  };
+
+  const toggleCompare = (color: string) => {
+    setComparing((prev) => {
       const next = new Set(prev);
       if (next.has(color)) next.delete(color);
       else next.add(color);
@@ -123,19 +82,13 @@ const ColorPlayground = () => {
 
   const removeCustomColor = (color: string) => {
     setCustomColors((prev) => prev.filter((c) => c.color !== color));
-    setSelected((prev) => {
-      const next = new Set(prev);
-      next.delete(color);
-      return next;
-    });
+    setSelected((prev) => { const n = new Set(prev); n.delete(color); return n; });
+    setComparing((prev) => { const n = new Set(prev); n.delete(color); return n; });
   };
 
-  const allColors = [
-    ...Object.values(COLOR_PALETTE).flat(),
-    ...customColors,
-  ];
-
+  const allColors = [...Object.values(COLOR_PALETTE).flat(), ...customColors];
   const selectedColors = allColors.filter((c) => selected.has(c.color));
+  const compareColors = allColors.filter((c) => comparing.has(c.color));
 
   return (
     <div className="min-h-screen bg-background p-6 lg:p-10">
@@ -145,7 +98,7 @@ const ColorPlayground = () => {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">🎨 颜色选择器</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              点击色块选中/取消，已选 {selected.size} 个 · 选择自动保存
+              点击色块选中/取消 · 已选 {selected.size} 个 · 点击 <Eye className="w-3 h-3 inline" /> 加入对比 · 选择自动保存
             </p>
           </div>
           <a
@@ -156,47 +109,74 @@ const ColorPlayground = () => {
           </a>
         </div>
 
-        {/* Live preview with long text */}
+        {/* Compare preview area */}
         <div className="bg-card border border-border rounded-xl p-6 space-y-5">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            实时预览效果
+            对比预览 · 点击已选颜色旁的 👁 图标添加到此处
           </h2>
 
-          {/* Full color swatches */}
-          {selectedColors.length > 0 && (
-            <div className="flex gap-2.5 flex-wrap">
-              {selectedColors.map((c) => (
-                <div key={c.color} className="flex flex-col items-center gap-1">
-                  <div
-                    className="w-8 h-8 rounded-full shadow-sm border-2 border-background"
-                    style={{ background: c.color }}
-                  />
-                  <span className="text-[10px] text-muted-foreground">{c.label}</span>
+          {compareColors.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              从下方已选颜色中点击 <Eye className="w-3.5 h-3.5 inline" /> 图标，将颜色加入对比
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {compareColors.map((c) => (
+                <div key={c.color} className="bg-white rounded-lg p-6 shadow-sm border border-border/50 space-y-3 relative">
+                  <button
+                    onClick={() => toggleCompare(c.color)}
+                    className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors"
+                    title="移出对比"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-5 h-5 rounded-full" style={{ background: c.color }} />
+                    <span className="text-xs font-medium text-muted-foreground">{c.label} {c.color}</span>
+                  </div>
+                  <h3 className="text-lg font-bold" style={{ color: c.color }}>
+                    好的排版，是无声的说服力
+                  </h3>
+                  {SAMPLE_PARAGRAPHS.map((text, i) => (
+                    <p key={i} className="text-sm leading-relaxed" style={{ color: c.color }}>
+                      {text}
+                    </p>
+                  ))}
                 </div>
               ))}
             </div>
           )}
-
-          {/* Per-color comparison cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {selectedColors.map((c) => (
-              <div key={c.color} className="bg-white rounded-lg p-6 shadow-sm border border-border/50 space-y-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-5 h-5 rounded-full" style={{ background: c.color }} />
-                  <span className="text-xs font-medium text-muted-foreground">{c.label} {c.color}</span>
-                </div>
-                <h3 className="text-lg font-bold" style={{ color: c.color }}>
-                  好的排版，是无声的说服力
-                </h3>
-                {SAMPLE_PARAGRAPHS.map((text, i) => (
-                  <p key={i} className="text-sm leading-relaxed" style={{ color: c.color }}>
-                    {text}
-                  </p>
-                ))}
-              </div>
-            ))}
-          </div>
         </div>
+
+        {/* Selected colors strip with compare toggle */}
+        {selectedColors.length > 0 && (
+          <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+              已选颜色（同步到编辑器工具栏）
+            </h2>
+            <div className="flex gap-3 flex-wrap">
+              {selectedColors.map((c) => {
+                const isComparing = comparing.has(c.color);
+                return (
+                  <div key={c.color} className="flex flex-col items-center gap-1">
+                    <div
+                      className="w-8 h-8 rounded-full shadow-sm border-2 border-background"
+                      style={{ background: c.color }}
+                    />
+                    <span className="text-[10px] text-muted-foreground">{c.label}</span>
+                    <button
+                      onClick={() => toggleCompare(c.color)}
+                      className={`transition-colors ${isComparing ? "text-foreground" : "text-muted-foreground/40 hover:text-muted-foreground"}`}
+                      title={isComparing ? "移出对比" : "加入对比"}
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Custom color section */}
         <div className="bg-card border border-border rounded-xl p-5 space-y-3">

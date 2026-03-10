@@ -1,13 +1,6 @@
+import { useState, useEffect } from "react";
 import { Bold } from "lucide-react";
-
-const TEXT_COLORS = [
-  { label: "深蓝", color: "#2B4C7E" },
-  { label: "珊瑚红", color: "#D94F4F" },
-  { label: "森林绿", color: "#2A7A4B" },
-  { label: "雅紫", color: "#7B4EA3" },
-  { label: "琥珀橙", color: "#C7742E" },
-  { label: "石板灰", color: "#4A5E6D" },
-];
+import { getSelectedColors, type ColorItem } from "@/lib/colors";
 
 interface FormatToolbarProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
@@ -38,6 +31,15 @@ const wrapSelection = (
 };
 
 const FormatToolbar = ({ textareaRef, markdown, onChange }: FormatToolbarProps) => {
+  const [textColors, setTextColors] = useState<ColorItem[]>(getSelectedColors);
+
+  // Re-read colors on focus (in case user changed them on /colors page)
+  useEffect(() => {
+    const refresh = () => setTextColors(getSelectedColors());
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, []);
+
   const handleBold = () => {
     if (!textareaRef.current) return;
     wrapSelection(textareaRef.current, markdown, "**", "**", onChange);
@@ -64,7 +66,7 @@ const FormatToolbar = ({ textareaRef, markdown, onChange }: FormatToolbarProps) 
         <Bold className="w-4 h-4" />
       </button>
       <div className="w-px h-5 bg-border mx-1" />
-      {TEXT_COLORS.map((c) => (
+      {textColors.map((c) => (
         <button
           key={c.color}
           onClick={() => handleColor(c.color)}

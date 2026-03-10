@@ -1,14 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Bold, AlignLeft, AlignCenter, AlignJustify } from "lucide-react";
-
-const TEXT_COLORS = [
-  { label: "深蓝", color: "#2B4C7E" },
-  { label: "珊瑚红", color: "#D94F4F" },
-  { label: "森林绿", color: "#2A7A4B" },
-  { label: "雅紫", color: "#7B4EA3" },
-  { label: "琥珀橙", color: "#C7742E" },
-  { label: "石板灰", color: "#4A5E6D" },
-];
+import { getSelectedColors, type ColorItem } from "@/lib/colors";
 
 interface FloatingToolbarProps {
   containerRef: React.RefObject<HTMLDivElement>;
@@ -29,6 +21,12 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const [textColors, setTextColors] = useState<ColorItem[]>(getSelectedColors);
+
+  // Re-read colors when toolbar becomes visible (in case user changed them on /colors page)
+  useEffect(() => {
+    if (visible) setTextColors(getSelectedColors());
+  }, [visible]);
 
   const updatePosition = useCallback(() => {
     const selection = window.getSelection();
@@ -119,7 +117,7 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
         <Bold className="w-3.5 h-3.5" />
       </button>
       <div className="w-px h-4 bg-border mx-0.5" />
-      {TEXT_COLORS.map((c) => (
+      {textColors.map((c) => (
         <button
           key={c.color}
           onMouseDown={(e) => applyColor(e, c.color)}
