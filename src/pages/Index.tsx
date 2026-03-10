@@ -455,27 +455,32 @@ const Index = () => {
   const mobileScale = isMobile ? Math.min(1, (window.innerWidth - 48) / CARD_WIDTH) : 1;
 
   const previewContent = (
-    <div className="flex-1 overflow-auto flex items-start justify-center p-4 lg:p-10 bg-background/80">
-      <div className="flex flex-col items-center gap-4 relative">
-        <p className="text-[11px] text-muted-foreground/70 text-center font-medium tracking-wide">
-          {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
-          <span className="ml-2 hidden sm:inline">可直接编辑预览卡片</span>
-        </p>
-        <div style={isMobile ? { transform: `scale(${mobileScale})`, transformOrigin: 'top center' } : undefined}>
-          <PaginatedPreview
-            html={renderedHtml}
-            cardWidth={CARD_WIDTH}
-            cardHeight={cardHeight}
-            fontSize={fontSize}
-            textAlign={textAlign}
-            templateClassName={template.className}
-            templateBackground={template.background}
-            onContentChange={handleContentChange}
-            contentRef={contentRef}
-            directHtml={directHtml}
-            markdown={markdown}
-          />
-        </div>
+    <div className="flex-1 overflow-auto flex flex-col items-center p-4 lg:p-10 bg-background/80">
+      {/* Fixed toolbar above preview */}
+      <div className="sticky top-0 z-10 mb-3 w-full max-w-lg">
+        <FloatingToolbar
+          containerRef={contentRef}
+          onContentChange={handleContentChange}
+        />
+      </div>
+      <p className="text-[11px] text-muted-foreground/70 text-center font-medium tracking-wide mb-4">
+        {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
+        <span className="ml-2 hidden sm:inline">选中文字使用上方工具栏</span>
+      </p>
+      <div style={isMobile ? { transform: `scale(${mobileScale})`, transformOrigin: 'top center' } : undefined}>
+        <PaginatedPreview
+          html={renderedHtml}
+          cardWidth={CARD_WIDTH}
+          cardHeight={cardHeight}
+          fontSize={fontSize}
+          textAlign={textAlign}
+          templateClassName={template.className}
+          templateBackground={template.background}
+          onContentChange={handleContentChange}
+          contentRef={contentRef}
+          directHtml={directHtml}
+          markdown={markdown}
+        />
       </div>
     </div>
   );
