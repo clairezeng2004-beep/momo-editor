@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from "react";
-import momoLogo from "@/assets/momo-logo.png";
+import momoLogo from "@/assets/momo-logo.jpg";
 import { toPng } from "html-to-image";
 import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
