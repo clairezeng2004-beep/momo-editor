@@ -442,6 +442,7 @@ const Index = () => {
               placeholder="在此输入内容，直接换行即可分段..."
               style={{ overflow: 'hidden' }}
             />
+            </div>
           </CollapsibleSection>
         </div>
       </div>
