@@ -38,8 +38,14 @@ export function useHistory(initialValue: string) {
     }
   }, []);
 
+  const reset = useCallback((newValue: string) => {
+    historyRef.current = [newValue];
+    indexRef.current = 0;
+    setValue(newValue);
+  }, []);
+
   const canUndo = indexRef.current > 0;
   const canRedo = indexRef.current < historyRef.current.length - 1;
 
-  return { value, push, undo, redo, canUndo, canRedo };
+  return { value, push, undo, redo, reset, canUndo, canRedo };
 }
