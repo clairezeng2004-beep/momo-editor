@@ -418,8 +418,9 @@ const Index = () => {
 
   const renderedHtml = directHtml ?? getHtml();
 
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false });
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false, style: true, ratio: true, font: true });
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  const [showSettingsSheet, setShowSettingsSheet] = useState(false);
 
   // Auto-resize textarea to fit content
   useEffect(() => {
