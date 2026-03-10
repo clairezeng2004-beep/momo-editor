@@ -1,5 +1,4 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import FloatingToolbar from "@/components/FloatingToolbar";
 
 interface PaginatedPreviewProps {
   html: string;
