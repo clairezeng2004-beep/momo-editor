@@ -177,49 +177,24 @@ const ColorPlayground = () => {
             </div>
           )}
 
-          {/* Simulated card preview */}
-          <div className="bg-white rounded-lg p-8 shadow-sm border border-border/50 space-y-5 max-w-lg">
-            <h3
-              className="text-xl font-bold"
-              style={{ color: selectedColors[0]?.color ?? "#1a1a1a" }}
-            >
-              好的排版，是无声的说服力
-            </h3>
-            {SAMPLE_PARAGRAPHS.map((text, i) => {
-              const color = selectedColors[i % selectedColors.length]?.color;
-              return (
-                <p
-                  key={i}
-                  className="text-sm leading-relaxed"
-                  style={{ color: i === 0 ? "#303030" : undefined }}
-                >
-                  {i === 0 ? (
-                    <>
-                      {text.slice(0, 12)}
-                      {selectedColors.map((c, j) => (
-                        <span key={j} style={{ color: c.color, fontWeight: 600 }}>
-                          {j === 0 ? text.slice(12, 24) : ""}
-                        </span>
-                      ))}
-                      {text.slice(24)}
-                    </>
-                  ) : (
-                    <span style={{ color }}>{text}</span>
-                  )}
-                </p>
-              );
-            })}
-            {/* Inline color demo */}
-            <p className="text-sm leading-relaxed" style={{ color: "#303030" }}>
-              混排效果：
-              {selectedColors.map((c, i) => (
-                <span key={c.color}>
-                  <span style={{ color: c.color, fontWeight: 600 }}>{c.label}</span>
-                  {i < selectedColors.length - 1 && "、"}
-                </span>
-              ))}
-              ——每一种颜色都在传递不同的情绪。
-            </p>
+          {/* Per-color comparison cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {selectedColors.map((c) => (
+              <div key={c.color} className="bg-white rounded-lg p-6 shadow-sm border border-border/50 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 rounded-full" style={{ background: c.color }} />
+                  <span className="text-xs font-medium text-muted-foreground">{c.label} {c.color}</span>
+                </div>
+                <h3 className="text-lg font-bold" style={{ color: c.color }}>
+                  好的排版，是无声的说服力
+                </h3>
+                {SAMPLE_PARAGRAPHS.map((text, i) => (
+                  <p key={i} className="text-sm leading-relaxed" style={{ color: c.color }}>
+                    {text}
+                  </p>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
 
