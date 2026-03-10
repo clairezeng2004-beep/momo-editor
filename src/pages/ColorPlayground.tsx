@@ -96,6 +96,56 @@ const ColorPlayground = () => {
     setComparing((prev) => { const n = new Set(prev); n.delete(color); return n; });
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setEyedropperImage(reader.result as string);
+      setPickedColor(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCanvasClick = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = Math.floor((e.clientX - rect.left) * scaleX);
+      const y = Math.floor((e.clientY - rect.top) * scaleY);
+      const pixel = ctx.getImageData(x, y, 1, 1).data;
+      const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+      setPickedColor(hex);
+      setNewColor(hex);
+    },
+    []
+  );
+
+  const handleImageLoad = useCallback(() => {
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img) return;
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0);
+  }, []);
+
+  const addPickedColor = () => {
+    if (!pickedColor) return;
+    const label = newLabel.trim() || pickedColor;
+    setCustomColors((prev) => [...prev, { label, color: pickedColor }]);
+    setSelected((prev) => new Set([...prev, pickedColor]));
+    setPickedColor(null);
+    setNewLabel("");
+  };
+
   const allColors = [...Object.values(COLOR_PALETTE).flat(), ...customColors];
   const selectedColors = allColors.filter((c) => selected.has(c.color));
   const compareColors = allColors.filter((c) => comparing.has(c.color));
