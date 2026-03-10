@@ -5,7 +5,7 @@ import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import { COLOR_PALETTE } from "@/lib/colors";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
-import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight, Menu, LogOut } from "lucide-react";
+import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight, Menu, LogOut, Upload, Pipette } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -163,6 +163,11 @@ const Index = () => {
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
   const draftDropdownRef = useRef<HTMLDivElement>(null);
+  const eyedropperFileRef = useRef<HTMLInputElement>(null);
+  const eyedropperCanvasRef = useRef<HTMLCanvasElement>(null);
+  const eyedropperImgRef = useRef<HTMLImageElement>(null);
+  const [eyedropperImage, setEyedropperImage] = useState<string | null>(null);
+  const [pickedColor, setPickedColor] = useState<string | null>(null);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -442,6 +447,41 @@ const Index = () => {
     }
   }, [markdown]);
 
+  const rgbToHex = (r: number, g: number, b: number) =>
+    "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+
+  const handleEyedropperUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { setEyedropperImage(reader.result as string); setPickedColor(null); };
+    reader.readAsDataURL(file);
+  };
+
+  const handleEyedropperCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = eyedropperCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width));
+    const y = Math.floor((e.clientY - rect.top) * (canvas.height / rect.height));
+    const pixel = ctx.getImageData(x, y, 1, 1).data;
+    const hex = rgbToHex(pixel[0], pixel[1], pixel[2]);
+    setPickedColor(hex);
+  }, []);
+
+  const handleEyedropperImgLoad = useCallback(() => {
+    const canvas = eyedropperCanvasRef.current;
+    const img = eyedropperImgRef.current;
+    if (!canvas || !img) return;
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0);
+  }, []);
+
   if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -534,6 +574,9 @@ const Index = () => {
     </div>
   );
 
+
+
+
   const mobileColorPicker = (
     <div className="border-t border-border/60 p-5 space-y-4">
       <CollapsibleSection id="colors" icon={Palette} label="文字颜色" collapsed={collapsedSections["colors"] ?? false} onToggle={toggleSection}>
@@ -557,6 +600,56 @@ const Index = () => {
               </div>
             </div>
           ))}
+        </div>
+      </CollapsibleSection>
+
+      {/* Eyedropper - upload image to pick color */}
+      <CollapsibleSection id="eyedropper" icon={Pipette} label="吸管取色" collapsed={collapsedSections["eyedropper"] ?? true} onToggle={toggleSection}>
+        <div className="space-y-3">
+          <input ref={eyedropperFileRef} type="file" accept="image/*" className="hidden" onChange={handleEyedropperUpload} />
+          <button
+            onClick={() => eyedropperFileRef.current?.click()}
+            className="w-full flex items-center justify-center gap-2 bg-secondary/60 text-secondary-foreground px-4 py-2.5 rounded-xl text-[13px] font-medium hover:bg-secondary transition-colors"
+          >
+            <Upload className="w-4 h-4" />
+            上传图片取色
+          </button>
+
+          {eyedropperImage && (
+            <div className="space-y-2">
+              <div className="relative rounded-lg overflow-hidden border border-border/60">
+                <img
+                  ref={eyedropperImgRef}
+                  src={eyedropperImage}
+                  alt="取色图片"
+                  className="hidden"
+                  onLoad={handleEyedropperImgLoad}
+                  crossOrigin="anonymous"
+                />
+                <canvas
+                  ref={eyedropperCanvasRef}
+                  onClick={handleEyedropperCanvasClick}
+                  className="w-full cursor-crosshair"
+                  style={{ imageRendering: "auto" }}
+                />
+              </div>
+              {pickedColor && (
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg border border-border/60" style={{ backgroundColor: pickedColor }} />
+                  <span className="text-[13px] font-mono text-muted-foreground">{pickedColor}</span>
+                  <button
+                    onClick={() => {
+                      document.execCommand("foreColor", false, pickedColor);
+                      handleContentChange();
+                    }}
+                    className="ml-auto px-3 py-1.5 rounded-lg bg-foreground/90 text-background text-[12px] font-medium hover:bg-foreground transition-colors"
+                  >
+                    应用颜色
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </CollapsibleSection>
     </div>
