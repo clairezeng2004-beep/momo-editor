@@ -31,7 +31,9 @@ const PaginatedPreview = ({
 }: PaginatedPreviewProps) => {
   const measureRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const editableRef = useRef<HTMLDivElement>(null);
   const [totalPages, setTotalPages] = useState(1);
+  const isEditingRef = useRef(false);
 
   const padding = { x: fontSize * 1.6, y: fontSize * 1.8 };
   const contentHeight = cardHeight - padding.y * 2 - FOOTER_HEIGHT;
@@ -51,6 +53,37 @@ const PaginatedPreview = ({
     const timer = setTimeout(paginate, 50);
     return () => clearTimeout(timer);
   }, [html, paginate, fontSize, cardWidth, cardHeight]);
+
+  // Set contentRef to the editable div (not the card)
+  useEffect(() => {
+    if (editableRef.current && contentRef) {
+      (contentRef as React.MutableRefObject<HTMLDivElement | null>).current = editableRef.current;
+    }
+  });
+
+  // Only update innerHTML from external source (markdown editor), not during direct editing
+  useEffect(() => {
+    if (editableRef.current && !isEditingRef.current) {
+      editableRef.current.innerHTML = html;
+    }
+  }, [html]);
+
+  const handleInput = useCallback(() => {
+    isEditingRef.current = true;
+    onContentChange();
+    // Reset the flag after React has processed the state update
+    requestAnimationFrame(() => {
+      isEditingRef.current = false;
+    });
+  }, [onContentChange]);
+
+  const handleFocus = useCallback(() => {
+    isEditingRef.current = true;
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    isEditingRef.current = false;
+  }, []);
 
   return (
     <>
@@ -83,9 +116,6 @@ const PaginatedPreview = ({
             <div
               ref={(el) => {
                 cardRefs.current[idx] = el;
-                if (idx === 0 && contentRef) {
-                  (contentRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
-                }
               }}
               className={`${templateClassName} shadow-2xl relative`}
               data-page-index={idx}
@@ -112,18 +142,31 @@ const PaginatedPreview = ({
                   overflow: "hidden",
                 }}
               >
-                <div
-                  className="markdown-body"
-                  contentEditable
-                  suppressContentEditableWarning
-                  dangerouslySetInnerHTML={{ __html: html }}
-                  onInput={onContentChange}
-                  style={{
-                    outline: "none",
-                    marginTop: idx === 0 ? 0 : -(idx * contentHeight),
-                    cursor: "text",
-                  }}
-                />
+                {idx === 0 ? (
+                  <div
+                    ref={editableRef}
+                    className="markdown-body"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onInput={handleInput}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    style={{
+                      outline: "none",
+                      cursor: "text",
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="markdown-body"
+                    dangerouslySetInnerHTML={{ __html: html }}
+                    style={{
+                      outline: "none",
+                      marginTop: -(idx * contentHeight),
+                      pointerEvents: "none",
+                    }}
+                  />
+                )}
               </div>
               {/* Footer */}
               <div
