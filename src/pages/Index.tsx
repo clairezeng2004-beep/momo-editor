@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from "react";
-import momoLogo from "@/assets/momo-logo.png";
+import momoLogo from "@/assets/momo-logo.jpg";
 import { toPng } from "html-to-image";
 import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
@@ -587,8 +587,8 @@ const Index = () => {
         editingTemplate={editingTemplate}
       />
       {/* Header */}
-      <header className="sticky top-0 border-b border-border/50 bg-card/95 backdrop-blur-xl px-5 py-2.5 flex items-center justify-between shrink-0 z-[200]">
-        <div className="flex items-center gap-3">
+      <header className="sticky top-0 border-b border-border/50 bg-card/95 backdrop-blur-xl px-3 sm:px-5 py-2.5 flex items-center justify-between shrink-0 z-[200]">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-2">
           {/* Menu button - opens settings sheet */}
           <Sheet open={showSettingsSheet} onOpenChange={setShowSettingsSheet}>
             <SheetTrigger asChild>
@@ -606,10 +606,10 @@ const Index = () => {
           <img src={momoLogo} alt="Momo Editor" className="w-7 h-7 rounded-lg object-cover" />
           <h1 className="text-[15px] font-semibold tracking-tight hidden sm:block text-foreground/90">Momo Editor</h1>
           {/* Draft selector */}
-          <div className="relative" ref={draftDropdownRef}>
+          <div className="relative min-w-0 flex-1" ref={draftDropdownRef}>
             <button
               onClick={() => setShowDraftList(!showDraftList)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50 text-[13px] hover:bg-secondary/80 transition-colors max-w-[560px]"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50 text-[13px] hover:bg-secondary/80 transition-colors max-w-full w-full"
             >
               <FileText className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
               <span className="truncate">{currentDraft?.title ?? "未命名"}</span>
