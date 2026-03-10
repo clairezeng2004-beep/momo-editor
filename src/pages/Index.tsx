@@ -27,41 +27,69 @@ const CARD_WIDTH = 420;
 const TemplateSelector = ({
   selected,
   onSelect,
+  allTemplates,
+  onCreateNew,
+  onEdit,
+  onDelete,
 }: {
   selected: TemplateStyle;
   onSelect: (t: TemplateStyle) => void;
+  allTemplates: TemplateStyle[];
+  onCreateNew: () => void;
+  onEdit: (t: CustomTemplate) => void;
+  onDelete: (id: string) => void;
 }) => (
   <div className="flex gap-2 flex-wrap">
-    {TEMPLATES.map((t) => (
-      <button
-        key={t.id}
-        onClick={() => onSelect(t)}
-        className={`flex flex-col items-center gap-1 rounded-lg p-2 transition-all border-2 ${
-          selected.id === t.id
-            ? "border-foreground shadow-md scale-105"
-            : "border-transparent hover:border-muted-foreground/30"
-        }`}
-      >
-        <div
-          className="w-10 h-14 rounded-md shadow-sm border border-border"
-          style={{ background: t.previewBg }}
-        >
-          <div
-            className="mt-2 mx-auto w-5 h-0.5 rounded"
-            style={{ background: t.previewText }}
-          />
-          <div
-            className="mt-1 mx-auto w-6 h-0.5 rounded opacity-40"
-            style={{ background: t.previewText }}
-          />
-          <div
-            className="mt-1 mx-auto w-4 h-0.5 rounded opacity-40"
-            style={{ background: t.previewText }}
-          />
+    {allTemplates.map((t) => {
+      const isCustom = "isCustom" in t;
+      return (
+        <div key={t.id} className="relative group">
+          <button
+            onClick={() => onSelect(t)}
+            className={`flex flex-col items-center gap-1 rounded-lg p-2 transition-all border-2 ${
+              selected.id === t.id
+                ? "border-foreground shadow-md scale-105"
+                : "border-transparent hover:border-muted-foreground/30"
+            }`}
+          >
+            <div
+              className="w-10 h-14 rounded-md shadow-sm border border-border"
+              style={{ background: t.previewBg }}
+            >
+              <div className="mt-2 mx-auto w-5 h-0.5 rounded" style={{ background: t.previewText }} />
+              <div className="mt-1 mx-auto w-6 h-0.5 rounded opacity-40" style={{ background: t.previewText }} />
+              <div className="mt-1 mx-auto w-4 h-0.5 rounded opacity-40" style={{ background: t.previewText }} />
+            </div>
+            <span className="text-xs text-muted-foreground">{t.name}</span>
+          </button>
+          {isCustom && (
+            <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 flex gap-0.5 transition-opacity">
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(t as CustomTemplate); }}
+                className="w-5 h-5 rounded-full bg-card border border-border shadow flex items-center justify-center hover:bg-secondary"
+              >
+                <Pencil className="w-2.5 h-2.5" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(t.id); }}
+                className="w-5 h-5 rounded-full bg-card border border-border shadow flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground"
+              >
+                <Trash2 className="w-2.5 h-2.5" />
+              </button>
+            </div>
+          )}
         </div>
-        <span className="text-xs text-muted-foreground">{t.name}</span>
-      </button>
-    ))}
+      );
+    })}
+    <button
+      onClick={onCreateNew}
+      className="flex flex-col items-center gap-1 rounded-lg p-2 transition-all border-2 border-dashed border-border hover:border-muted-foreground/30"
+    >
+      <div className="w-10 h-14 rounded-md border border-dashed border-border flex items-center justify-center">
+        <Plus className="w-4 h-4 text-muted-foreground" />
+      </div>
+      <span className="text-xs text-muted-foreground">自定义</span>
+    </button>
   </div>
 );
 
