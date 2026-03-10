@@ -18,8 +18,8 @@ export const TEMPLATES: TemplateStyle[] = [
     id: "clean",
     name: "简约白",
     className: "template-clean",
-    previewBg: "#ffffff",
-    previewText: "#1a1a1a",
+    previewBg: "#f7f7f6",
+    previewText: "#555555",
   },
   {
     id: "warm",
