@@ -585,7 +585,7 @@ const Index = () => {
           {Object.entries(COLOR_PALETTE).map(([group, colors]) => (
             <div key={group}>
               <p className="text-[11px] text-muted-foreground mb-1.5">{group}</p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="grid grid-cols-4 gap-1.5">
                 {colors.map((c) => (
                   <button
                     key={c.color}
@@ -832,6 +832,10 @@ const Index = () => {
       <div className="flex-1 flex flex-col lg:hidden overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           {previewContent}
+          {/* Tablet: show editor below preview */}
+          <div className="hidden md:block lg:hidden">
+            {editorContent}
+          </div>
         </div>
       </div>
 
