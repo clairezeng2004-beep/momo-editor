@@ -1,14 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Bold, AlignLeft, AlignCenter, AlignJustify } from "lucide-react";
-
-const TEXT_COLORS = [
-  { label: "深蓝", color: "#2B4C7E" },
-  { label: "珊瑚红", color: "#D94F4F" },
-  { label: "森林绿", color: "#2A7A4B" },
-  { label: "雅紫", color: "#7B4EA3" },
-  { label: "琥珀橙", color: "#C7742E" },
-  { label: "石板灰", color: "#4A5E6D" },
-];
+import { getSelectedColors, type ColorItem } from "@/lib/colors";
 
 interface FloatingToolbarProps {
   containerRef: React.RefObject<HTMLDivElement>;
