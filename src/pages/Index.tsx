@@ -618,6 +618,7 @@ const Index = () => {
               handleMarkdownChange(e.target.value);
             }}
             onInput={syncTextareaHeight}
+            onWheel={(e) => e.stopPropagation()}
             className="w-full bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
             placeholder="在此输入内容，直接换行即可分段..."
             style={{ overflow: 'hidden' }}

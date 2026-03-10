@@ -148,7 +148,13 @@ const PaginatedPreview = ({
       return;
     }
 
-    const lines = getContentRects(container);
+    const lines = getContentRects(container)
+      .map((line) => ({
+        top: Math.max(0, Math.floor(line.top)),
+        bottom: Math.max(0, Math.ceil(line.bottom)),
+      }))
+      .filter((line) => line.bottom > line.top)
+      .sort((a, b) => a.top - b.top || a.bottom - b.bottom);
 
     if (lines.length === 0) {
       const pageCount = Math.max(1, Math.ceil(totalH / contentAreaHeight));
@@ -163,38 +169,52 @@ const PaginatedPreview = ({
       return;
     }
 
-    const offsets: number[] = [0];
+    const offsets: number[] = [];
     const heights: number[] = [];
-    let currentOffset = 0;
-    let lastFittingBottom = Math.ceil(lines[0].bottom);
+    let pageStart = 0;
+    let index = 0;
 
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-      const absoluteTop = Math.floor(line.top);
-      const absoluteBottom = Math.ceil(line.bottom);
-      const relativeBottom = absoluteBottom - currentOffset;
-
-      if (relativeBottom > contentAreaHeight + PAGE_EPSILON) {
-        const pageBottom = Math.max(
-          currentOffset + lineHeight,
-          Math.min(currentOffset + contentAreaHeight, lastFittingBottom)
-        );
-
-        heights.push(pageBottom - currentOffset);
-        currentOffset = pageBottom;
-        offsets.push(currentOffset);
+    while (pageStart < totalH - PAGE_EPSILON) {
+      while (index < lines.length && lines[index].bottom <= pageStart + PAGE_EPSILON) {
+        index += 1;
       }
 
-      if (absoluteTop >= currentOffset - PAGE_EPSILON) {
-        lastFittingBottom = Math.max(lastFittingBottom, absoluteBottom);
+      offsets.push(pageStart);
+
+      let pageEnd = pageStart;
+      let cursor = index;
+
+      while (cursor < lines.length) {
+        const line = lines[cursor];
+
+        if (line.top < pageStart + PAGE_EPSILON) {
+          cursor += 1;
+          continue;
+        }
+
+        if (line.bottom - pageStart <= contentAreaHeight + PAGE_EPSILON) {
+          pageEnd = Math.max(pageEnd, line.bottom);
+          cursor += 1;
+          continue;
+        }
+
+        break;
       }
+
+      if (pageEnd <= pageStart + PAGE_EPSILON) {
+        pageEnd = Math.min(totalH, pageStart + contentAreaHeight);
+      }
+
+      const clampedPageEnd = Math.min(totalH, pageEnd);
+      heights.push(Math.max(lineHeight, clampedPageEnd - pageStart));
+
+      if (clampedPageEnd >= totalH - PAGE_EPSILON) {
+        break;
+      }
+
+      pageStart = clampedPageEnd;
+      index = cursor;
     }
-
-    const finalHeight = Math.max(
-      lineHeight,
-      Math.min(contentAreaHeight, Math.max(lastFittingBottom, totalH) - currentOffset)
-    );
-    heights.push(finalHeight);
 
     setPagination({ offsets, heights });
   }, [contentAreaHeight, disablePagination, lineHeight]);
