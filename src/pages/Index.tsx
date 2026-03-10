@@ -84,6 +84,19 @@ const RatioSelector = ({
 const Index = () => {
   const drafts = useDrafts(DEFAULT_MARKDOWN);
   const [showDraftList, setShowDraftList] = useState(false);
+  const draftDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close draft dropdown on click outside
+  useEffect(() => {
+    if (!showDraftList) return;
+    const handler = (e: MouseEvent) => {
+      if (draftDropdownRef.current && !draftDropdownRef.current.contains(e.target as Node)) {
+        setShowDraftList(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [showDraftList]);
 
   // Initialize: load current draft or create one
   useEffect(() => {
