@@ -165,6 +165,28 @@ const Index = () => {
               />
             </section>
 
+            {/* Text align */}
+            <section>
+              <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
+                <Type className="w-3.5 h-3.5" /> 对齐
+              </h2>
+              <div className="flex gap-1.5">
+                {([["justify", "两端对齐"], ["left", "左对齐"], ["center", "居中"]] as const).map(([value, label]) => (
+                  <button
+                    key={value}
+                    onClick={() => setTextAlign(value)}
+                    className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                      textAlign === value
+                        ? "bg-foreground text-background font-medium"
+                        : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </section>
+
             {/* Toggle editor on mobile */}
             <button
               onClick={() => setShowEditor(!showEditor)}
