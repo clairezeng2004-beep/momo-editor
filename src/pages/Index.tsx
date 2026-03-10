@@ -449,14 +449,6 @@ const Index = () => {
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
 
-  // Auto-resize textarea to fit content
-  useEffect(() => {
-    const el = textareaRef.current;
-    if (el) {
-      el.style.height = 'auto';
-      el.style.height = `${el.scrollHeight}px`;
-    }
-  }, [markdown]);
 
   const rgbToHex = (r: number, g: number, b: number) =>
     "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
