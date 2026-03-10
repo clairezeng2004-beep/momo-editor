@@ -12,7 +12,7 @@ export const TEMPLATES: TemplateStyle[] = [
     name: "备忘录",
     className: "template-apple-notes",
     previewBg: "#ffffff",
-    previewText: "#e8a32e",
+    previewText: "#303030",
   },
   {
     id: "clean",
