@@ -366,7 +366,7 @@ const Index = () => {
   const sidebarContent = (
     <>
       <div className="p-5 space-y-5">
-        <CollapsibleSection id="style" icon={Eye} label="样式">
+        <CollapsibleSection id="style" icon={Eye} label="样式" collapsed={collapsedSections["style"] ?? false} onToggle={toggleSection}>
           <TemplateSelector
             selected={template}
             onSelect={(t) => {
