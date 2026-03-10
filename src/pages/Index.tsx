@@ -532,15 +532,6 @@ const Index = () => {
         />
       </CollapsibleSection>
 
-      <button
-        onClick={() => setShowDefaultEditor(true)}
-        className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-[13px] text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
-      >
-        <Settings2 className="w-3.5 h-3.5" />
-        编辑默认文本
-      </button>
-    </div>
-  );
 
   const editorContent = (
     <div className="border-t border-border/60">

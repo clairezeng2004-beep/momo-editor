@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import GuidePage from "./pages/GuidePage.tsx";
 import ColorPlayground from "./pages/ColorPlayground.tsx";
 
 const queryClient = new QueryClient();
