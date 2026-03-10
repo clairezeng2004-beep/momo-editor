@@ -11,8 +11,8 @@ export const TEMPLATES: TemplateStyle[] = [
     id: "apple-notes",
     name: "备忘录",
     className: "template-apple-notes",
-    previewBg: "#ffffff",
-    previewText: "#303030",
+    previewBg: "#f5f5f4",
+    previewText: "#555555",
   },
   {
     id: "clean",
