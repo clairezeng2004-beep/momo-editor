@@ -90,13 +90,7 @@ export function useCloudDrafts(defaultMarkdown: string) {
     async (markdown?: string, templateId = "apple-notes", ratioId = "3:4", fontSize = 15): Promise<string> => {
       if (!user) return "";
       // Always read the latest default at call time
-      const content = markdown ?? (() => {
-        try {
-          const saved = localStorage.getItem("card-maker-default-markdown");
-          if (saved !== null) return saved;
-        } catch {}
-        return defaultMarkdown;
-      })();
+      const content = markdown ?? await fetchDefaultMarkdown();
       const title = extractTitle(content);
 
       const { data } = await supabase.from("drafts").insert({
