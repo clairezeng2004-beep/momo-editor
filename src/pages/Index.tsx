@@ -159,6 +159,7 @@ const Index = () => {
   const navigate = useNavigate();
   const drafts = useCloudDrafts(DEFAULT_MARKDOWN);
   const customTemplates = useCustomTemplates();
+  const isMobile = useIsMobile();
   const [showDraftList, setShowDraftList] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
@@ -665,7 +666,6 @@ const Index = () => {
     </>
   );
 
-  const isMobile = useIsMobile();
   const mobileScale = isMobile ? Math.min(1, (window.innerWidth - 48) / CARD_WIDTH) : 1;
 
   const previewContent = (
