@@ -179,7 +179,7 @@ const PaginatedPreview = ({
                   color: "#C8A951",
                   letterSpacing: "0.02em",
                   flexShrink: 0,
-                  paddingTop: 4,
+                  paddingTop: 10,
                   margin: `0 -${padding.x}px`,
                   padding: `0 ${padding.x}px`,
                 }}
