@@ -293,6 +293,7 @@ const Index = () => {
             onContentChange={handleContentChange}
           />
           <div
+            key={directHtml === null ? markdown : "direct"}
             ref={contentRef}
             className="markdown-body"
             contentEditable
