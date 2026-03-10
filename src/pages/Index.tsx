@@ -538,6 +538,45 @@ const Index = () => {
           className="w-full accent-foreground h-1 appearance-none bg-border rounded-full [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:cursor-pointer"
         />
       </CollapsibleSection>
+
+      <CollapsibleSection id="footer" icon={Edit3} label="页脚" collapsed={collapsedSections["footer"] ?? true} onToggle={toggleSection}>
+        <div className="space-y-3">
+          <label className="flex items-center gap-2 text-[13px] text-foreground cursor-pointer">
+            <input
+              type="checkbox"
+              checked={footerEnabled}
+              onChange={(e) => setFooterEnabled(e.target.checked)}
+              className="accent-foreground"
+            />
+            显示页脚
+          </label>
+          {footerEnabled && (
+            <>
+              <input
+                type="text"
+                value={footerText}
+                onChange={(e) => setFooterText(e.target.value)}
+                className="w-full bg-background border border-border/60 rounded-lg px-3 py-1.5 text-[13px] focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                placeholder="页脚文本"
+              />
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={footerColor}
+                  onChange={(e) => setFooterColor(e.target.value)}
+                  className="w-7 h-7 rounded border border-border/60 cursor-pointer bg-transparent p-0"
+                />
+                <input
+                  type="text"
+                  value={footerColor}
+                  onChange={(e) => setFooterColor(e.target.value)}
+                  className="flex-1 bg-background border border-border/60 rounded-lg px-3 py-1.5 text-[13px] font-mono focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </CollapsibleSection>
     </div>
   );
 
