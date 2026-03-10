@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { fetchDefaultMarkdown } from "@/components/DefaultMarkdownEditor";
 
 export interface Draft {
   id: string;
