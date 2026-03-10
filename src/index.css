@@ -87,6 +87,58 @@
   }
 }
 
+/* Apple Notes style */
+.template-apple-notes {
+  background: #ffffff;
+  color: #303030;
+}
+
+.template-apple-notes .markdown-body {
+  line-height: 2.05;
+}
+
+.template-apple-notes .markdown-body h1 {
+  font-size: 1.55em;
+  font-weight: 800;
+  color: #e8a32e;
+  margin: 0 0 0.7em 0;
+  line-height: 1.35;
+}
+
+.template-apple-notes .markdown-body h2 {
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #e8a32e;
+  margin: 1.4em 0 0.5em 0;
+}
+
+.template-apple-notes .markdown-body h3 {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: #e8a32e;
+  margin: 1.2em 0 0.4em 0;
+}
+
+.template-apple-notes .markdown-body p {
+  margin: 0 0 1.5em 0;
+  color: #303030;
+}
+
+.template-apple-notes .markdown-body strong {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.template-apple-notes .markdown-body blockquote {
+  border-left: 3px solid #e8a32e;
+  color: #555;
+}
+
+.template-apple-notes .markdown-body hr {
+  border-top: 1px solid #e0e0e0;
+  opacity: 1;
+}
+
 /* Template styles for the rendered card */
 .template-clean {
   background: #ffffff;
