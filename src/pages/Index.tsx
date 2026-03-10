@@ -13,7 +13,7 @@ import FormatToolbar from "@/components/FormatToolbar";
 import FloatingToolbar from "@/components/FloatingToolbar";
 import PaginatedPreview from "@/components/PaginatedPreview";
 import TemplateEditor from "@/components/TemplateEditor";
-import DefaultMarkdownEditor, { getDefaultMarkdown } from "@/components/DefaultMarkdownEditor";
+import { getDefaultMarkdown } from "@/components/DefaultMarkdownEditor";
 import { useHistory } from "@/hooks/use-history";
 import { useCloudDrafts } from "@/hooks/use-cloud-drafts";
 import { useCustomTemplates } from "@/hooks/use-custom-templates";
