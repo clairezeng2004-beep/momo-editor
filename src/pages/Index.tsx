@@ -4,7 +4,7 @@ import { toPng } from "html-to-image";
 import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
-import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight } from "lucide-react";
+import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight, Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import FormatToolbar from "@/components/FormatToolbar";
 import FloatingToolbar from "@/components/FloatingToolbar";
