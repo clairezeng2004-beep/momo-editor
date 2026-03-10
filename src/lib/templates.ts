@@ -72,6 +72,7 @@ export const ASPECT_RATIOS: AspectRatio[] = [
   { id: "9:16", label: "9:16", width: 9, height: 16 },
   { id: "1:1", label: "1:1", width: 1, height: 1 },
   { id: "4:3", label: "4:3", width: 4, height: 3 },
+  { id: "long", label: "长图", width: 3, height: 4 },
 ];
 
 export const DEFAULT_MARKDOWN = `# Momo Editor 使用指南

@@ -263,7 +263,8 @@ const Index = () => {
     return () => window.removeEventListener("resize", syncTextareaHeight);
   }, [syncTextareaHeight]);
 
-  const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
+  const isLongRatio = ratio.id === "long";
+  const cardHeight = isLongRatio ? (CARD_WIDTH / 3) * 4 : (CARD_WIDTH / ratio.width) * ratio.height;
 
   // Preprocess: single newline → double newline for paragraph breaks
   // But preserve special markdown lines (headings, lists, blockquotes, hr, code fences)
@@ -801,7 +802,7 @@ const Index = () => {
       </div>
       <div className="px-4 lg:px-10 w-full flex flex-col items-center">
       <p className="text-[11px] text-muted-foreground/70 text-center font-medium tracking-wide mb-4 mt-2">
-        {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
+        {isLongRatio ? `${ratio.label} · ${CARD_WIDTH}×自适应` : `${ratio.label} · ${CARD_WIDTH}×${Math.round(cardHeight)}`}
         <span className="ml-2 hidden sm:inline">选中文字使用上方工具栏</span>
       </p>
       <div style={isMobile ? { transform: `scale(${mobileScale})`, transformOrigin: 'top center' } : undefined}>
@@ -820,6 +821,7 @@ const Index = () => {
           footerEnabled={footerEnabled}
           footerText={footerText}
           footerColor={footerColor}
+          disablePagination={isLongRatio}
         />
       </div>
       </div>
