@@ -817,6 +817,9 @@ const Index = () => {
           contentRef={contentRef}
           directHtml={directHtml}
           markdown={markdown}
+          footerEnabled={footerEnabled}
+          footerText={footerText}
+          footerColor={footerColor}
         />
       </div>
       </div>
