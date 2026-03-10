@@ -46,13 +46,13 @@ const Auth = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleOAuthLogin = async (provider: "google" | "apple") => {
     setError("");
-    const result = await lovable.auth.signInWithOAuth("google", {
+    const result = await lovable.auth.signInWithOAuth(provider, {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
-      setError(result.error.message || "Google 登录失败");
+      setError(result.error.message || `${provider} 登录失败`);
     }
   };
 
