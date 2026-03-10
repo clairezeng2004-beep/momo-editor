@@ -5,7 +5,7 @@ import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
 import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2 } from "lucide-react";
 import FormatToolbar from "@/components/FormatToolbar";
-import FloatingToolbar from "@/components/FloatingToolbar";
+import PaginatedPreview from "@/components/PaginatedPreview";
 import { useHistory } from "@/hooks/use-history";
 import {
   ResizablePanelGroup,
@@ -91,15 +91,58 @@ const Index = () => {
   const [exporting, setExporting] = useState(false);
   // When user edits directly in preview, we store overridden HTML
   const [directHtml, setDirectHtml] = useState<string | null>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
 
+  // Preprocess: single newline → double newline for paragraph breaks
+  // But preserve special markdown lines (headings, lists, blockquotes, hr, code fences)
+  const preprocessMarkdown = useCallback((text: string) => {
+    const lines = text.split('\n');
+    const result: string[] = [];
+    let inCodeBlock = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // Track code fences
+      if (trimmed.startsWith('```')) {
+        inCodeBlock = !inCodeBlock;
+        result.push(line);
+        continue;
+      }
+
+      if (inCodeBlock) {
+        result.push(line);
+        continue;
+      }
+
+      result.push(line);
+
+      // Add extra newline after non-empty lines that are followed by another non-empty line
+      // Skip if current or next line is special markdown syntax
+      if (i < lines.length - 1) {
+        const nextLine = lines[i + 1]?.trim() ?? '';
+        const isCurrentEmpty = trimmed === '';
+        const isNextEmpty = nextLine === '';
+        const isSpecial = (l: string) =>
+          l.startsWith('#') || l.startsWith('-') || l.startsWith('*') || l.startsWith('>') ||
+          l.startsWith('```') || l.match(/^\d+\./) || l === '---' || l === '***' || l === '';
+
+        if (!isCurrentEmpty && !isNextEmpty && !isSpecial(trimmed) && !isSpecial(nextLine)) {
+          result.push('');
+        }
+      }
+    }
+    return result.join('\n');
+  }, []);
+
   const getHtml = useCallback(() => {
-    return marked.parse(markdown, { async: false }) as string;
-  }, [markdown]);
+    const processed = preprocessMarkdown(markdown);
+    return marked.parse(processed, { async: false }) as string;
+  }, [markdown, preprocessMarkdown]);
 
   // When markdown changes from textarea, reset directHtml
   const handleMarkdownChange = useCallback(
@@ -137,18 +180,25 @@ const Index = () => {
   }, [history]);
 
   const handleExport = async () => {
-    if (!cardRef.current) return;
+    // Export all page cards
+    const pageElements = document.querySelectorAll('[data-page-index]');
+    if (pageElements.length === 0) return;
     setExporting(true);
     try {
       const scale = 3;
-      const dataUrl = await toPng(cardRef.current, {
-        pixelRatio: scale,
-        cacheBust: true,
-      });
-      const link = document.createElement("a");
-      link.download = `xiaohongshu-${Date.now()}.png`;
-      link.href = dataUrl;
-      link.click();
+      for (let i = 0; i < pageElements.length; i++) {
+        const el = pageElements[i] as HTMLElement;
+        const dataUrl = await toPng(el, {
+          pixelRatio: scale,
+          cacheBust: true,
+        });
+        const link = document.createElement("a");
+        link.download = `xiaohongshu-${Date.now()}-${i + 1}.png`;
+        link.href = dataUrl;
+        link.click();
+        // Small delay between downloads
+        if (pageElements.length > 1) await new Promise(r => setTimeout(r, 300));
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -238,9 +288,15 @@ const Index = () => {
           <textarea
             ref={textareaRef}
             value={markdown}
-            onChange={(e) => handleMarkdownChange(e.target.value)}
-            className="w-full h-64 lg:h-80 bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
-            placeholder="在此输入 Markdown 内容..."
+            onChange={(e) => {
+              handleMarkdownChange(e.target.value);
+              // Auto-grow
+              const el = e.target;
+              el.style.height = 'auto';
+              el.style.height = `${Math.max(200, el.scrollHeight)}px`;
+            }}
+            className="w-full min-h-[200px] bg-secondary rounded-lg p-4 text-sm font-mono resize-none focus:outline-none focus:ring-2 focus:ring-foreground/20 text-foreground placeholder:text-muted-foreground"
+            placeholder="在此输入内容，直接换行即可分段..."
           />
         </div>
       </div>
@@ -249,40 +305,23 @@ const Index = () => {
 
   const previewContent = (
     <div className="flex-1 overflow-auto flex items-start justify-center p-6 lg:p-10 bg-background">
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 relative">
         <p className="text-xs text-muted-foreground">
           预览 · {ratio.label} · {CARD_WIDTH}×{Math.round(cardHeight)}
-          <span className="ml-2 opacity-60">（可选中文字直接改色/加粗）</span>
+          <span className="ml-2 opacity-60">（可选中文字直接改色/加粗 · 超长自动分页）</span>
         </p>
-        <div
-          ref={cardRef}
-          className={`${template.className} shadow-2xl relative`}
-          style={{
-            width: CARD_WIDTH,
-            minHeight: cardHeight,
-            fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
-            fontSize: `${fontSize}px`,
-            padding: `${fontSize * 2.2}px ${fontSize * 1.8}px`,
-            borderRadius: 0,
-            boxSizing: "border-box",
-            textAlign: textAlign,
-          }}
-        >
-          <FloatingToolbar
-            containerRef={cardRef}
-            onContentChange={handleContentChange}
-          />
-          <div
-            key={directHtml === null ? markdown : "direct"}
-            ref={contentRef}
-            className="markdown-body"
-            contentEditable
-            suppressContentEditableWarning
-            dangerouslySetInnerHTML={{ __html: renderedHtml }}
-            onInput={handleContentChange}
-            style={{ outline: "none" }}
-          />
-        </div>
+        <PaginatedPreview
+          html={renderedHtml}
+          cardWidth={CARD_WIDTH}
+          cardHeight={cardHeight}
+          fontSize={fontSize}
+          textAlign={textAlign}
+          templateClassName={template.className}
+          onContentChange={handleContentChange}
+          contentRef={contentRef}
+          directHtml={directHtml}
+          markdown={markdown}
+        />
       </div>
     </div>
   );
