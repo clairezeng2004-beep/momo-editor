@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Bold } from "lucide-react";
+import { Bold, AlignLeft, AlignCenter, AlignJustify } from "lucide-react";
 
 const TEXT_COLORS = [
   { label: "深蓝", color: "#2B4C7E" },
@@ -14,6 +14,16 @@ interface FloatingToolbarProps {
   containerRef: React.RefObject<HTMLDivElement>;
   onContentChange?: () => void;
 }
+
+const getBlockElement = (node: Node | null): HTMLElement | null => {
+  const blockTags = new Set(["P", "H1", "H2", "H3", "H4", "H5", "H6", "LI", "BLOCKQUOTE", "DIV"]);
+  let el = node instanceof HTMLElement ? node : node?.parentElement ?? null;
+  while (el) {
+    if (blockTags.has(el.tagName)) return el;
+    el = el.parentElement;
+  }
+  return null;
+};
 
 const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps) => {
   const [visible, setVisible] = useState(false);
@@ -60,6 +70,34 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
     onContentChange?.();
   };
 
+  const applyAlign = (e: React.MouseEvent, align: string) => {
+    e.preventDefault();
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) return;
+
+    // Get all block elements in the selection range
+    const range = selection.getRangeAt(0);
+    const startBlock = getBlockElement(range.startContainer);
+    const endBlock = getBlockElement(range.endContainer);
+
+    if (startBlock) {
+      // Collect all blocks between start and end
+      const blocks: HTMLElement[] = [];
+      let current: HTMLElement | null = startBlock;
+      while (current) {
+        blocks.push(current);
+        if (current === endBlock) break;
+        const next = current.nextElementSibling as HTMLElement | null;
+        current = next;
+      }
+      blocks.forEach((block) => {
+        block.style.textAlign = align;
+      });
+    }
+
+    onContentChange?.();
+  };
+
   if (!visible) return null;
 
   return (
@@ -71,7 +109,7 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
         left: position.left,
         transform: "translateX(-50%)",
       }}
-      onMouseDown={(e) => e.preventDefault()} // prevent losing selection
+      onMouseDown={(e) => e.preventDefault()}
     >
       <button
         onMouseDown={applyBold}
@@ -94,6 +132,28 @@ const FloatingToolbar = ({ containerRef, onContentChange }: FloatingToolbarProps
           />
         </button>
       ))}
+      <div className="w-px h-4 bg-border mx-0.5" />
+      <button
+        onMouseDown={(e) => applyAlign(e, "left")}
+        className="w-7 h-7 rounded flex items-center justify-center hover:bg-secondary transition-colors"
+        title="左对齐"
+      >
+        <AlignLeft className="w-3.5 h-3.5" />
+      </button>
+      <button
+        onMouseDown={(e) => applyAlign(e, "center")}
+        className="w-7 h-7 rounded flex items-center justify-center hover:bg-secondary transition-colors"
+        title="居中"
+      >
+        <AlignCenter className="w-3.5 h-3.5" />
+      </button>
+      <button
+        onMouseDown={(e) => applyAlign(e, "justify")}
+        className="w-7 h-7 rounded flex items-center justify-center hover:bg-secondary transition-colors"
+        title="两端对齐"
+      >
+        <AlignJustify className="w-3.5 h-3.5" />
+      </button>
     </div>
   );
 };

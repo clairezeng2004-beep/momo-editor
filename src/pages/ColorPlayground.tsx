@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Check, Copy } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Plus, X } from "lucide-react";
 
 const COLOR_PALETTE = {
   "蓝色系": [
@@ -64,13 +64,43 @@ const COLOR_PALETTE = {
   ],
 };
 
-const SAMPLE_TEXT = "与其在模型层内卷，不如想想怎么把 Context 喂得更优雅。";
+const SAMPLE_PARAGRAPHS = [
+  "与其在模型层内卷，不如想想怎么把 Context 喂得更优雅。好的 Prompt 工程就像好的产品设计——看似简单，背后是大量的迭代和取舍。",
+  "这段文字用来展示不同颜色在长文本中的视觉效果。一个好的配色方案需要在阅读时既醒目又不刺眼，既有辨识度又保持整体和谐。字体大小、行高、字间距都会影响颜色的最终呈现。",
+  "在小红书的图文排版中，颜色的运用至关重要。标题需要醒目，正文需要舒适，强调部分需要恰到好处地吸引注意力。太多颜色会显得杂乱，太少又会单调乏味。",
+];
+
+const STORAGE_KEY = "color-playground-selected";
+const CUSTOM_COLORS_KEY = "color-playground-custom";
+
+const loadFromStorage = <T,>(key: string, fallback: T): T => {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : fallback;
+  } catch {
+    return fallback;
+  }
+};
 
 const ColorPlayground = () => {
-  const [selected, setSelected] = useState<Set<string>>(
-    new Set(["#2B4C7E", "#D94F4F", "#2A7A4B", "#7B4EA3", "#C7742E", "#4A5E6D"])
+  const [selected, setSelected] = useState<Set<string>>(() =>
+    new Set(loadFromStorage<string[]>(STORAGE_KEY, ["#2B4C7E", "#D94F4F", "#2A7A4B", "#7B4EA3", "#C7742E", "#4A5E6D"]))
   );
-  const [copied, setCopied] = useState(false);
+  const [customColors, setCustomColors] = useState<{ label: string; color: string }[]>(() =>
+    loadFromStorage(CUSTOM_COLORS_KEY, [])
+  );
+  const [newColor, setNewColor] = useState("#5A7D9A");
+  const [newLabel, setNewLabel] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  // Persist selections
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...selected]));
+  }, [selected]);
+
+  useEffect(() => {
+    localStorage.setItem(CUSTOM_COLORS_KEY, JSON.stringify(customColors));
+  }, [customColors]);
 
   const toggle = (color: string) => {
     setSelected((prev) => {
@@ -81,94 +111,197 @@ const ColorPlayground = () => {
     });
   };
 
-  const exportSelection = () => {
-    const items = Object.values(COLOR_PALETTE)
-      .flat()
-      .filter((c) => selected.has(c.color));
-    const code = items
-      .map((c) => `  { label: "${c.label}", color: "${c.color}" },`)
-      .join("\n");
-    navigator.clipboard.writeText(`[\n${code}\n]`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const addCustomColor = () => {
+    if (!newColor) return;
+    const label = newLabel.trim() || newColor;
+    setCustomColors((prev) => [...prev, { label, color: newColor }]);
+    setSelected((prev) => new Set([...prev, newColor]));
+    setNewLabel("");
+    setNewColor("#5A7D9A");
+    setShowAddForm(false);
   };
+
+  const removeCustomColor = (color: string) => {
+    setCustomColors((prev) => prev.filter((c) => c.color !== color));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.delete(color);
+      return next;
+    });
+  };
+
+  const allColors = [
+    ...Object.values(COLOR_PALETTE).flat(),
+    ...customColors,
+  ];
+
+  const selectedColors = allColors.filter((c) => selected.has(c.color));
 
   return (
     <div className="min-h-screen bg-background p-6 lg:p-10">
       <div className="max-w-5xl mx-auto space-y-8">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">🎨 颜色选择器 Playground</h1>
+            <h1 className="text-2xl font-bold tracking-tight">🎨 颜色选择器</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              点击色块选中/取消，已选 {selected.size} 个颜色
+              点击色块选中/取消，已选 {selected.size} 个 · 选择自动保存
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="/"
-              className="text-sm text-muted-foreground hover:text-foreground underline"
+          <a
+            href="/"
+            className="text-sm text-muted-foreground hover:text-foreground underline"
+          >
+            ← 返回编辑器
+          </a>
+        </div>
+
+        {/* Live preview with long text */}
+        <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            实时预览效果
+          </h2>
+
+          {/* Full color swatches */}
+          {selectedColors.length > 0 && (
+            <div className="flex gap-2.5 flex-wrap">
+              {selectedColors.map((c) => (
+                <div key={c.color} className="flex flex-col items-center gap-1">
+                  <div
+                    className="w-8 h-8 rounded-full shadow-sm border-2 border-background"
+                    style={{ background: c.color }}
+                  />
+                  <span className="text-[10px] text-muted-foreground">{c.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Simulated card preview */}
+          <div className="bg-white rounded-lg p-8 shadow-sm border border-border/50 space-y-5 max-w-lg">
+            <h3
+              className="text-xl font-bold"
+              style={{ color: selectedColors[0]?.color ?? "#1a1a1a" }}
             >
-              ← 返回编辑器
-            </a>
-            <button
-              onClick={exportSelection}
-              className="flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
-            >
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copied ? "已复制" : "复制选中配置"}
-            </button>
+              好的排版，是无声的说服力
+            </h3>
+            {SAMPLE_PARAGRAPHS.map((text, i) => {
+              const color = selectedColors[i % selectedColors.length]?.color;
+              return (
+                <p
+                  key={i}
+                  className="text-sm leading-relaxed"
+                  style={{ color: i === 0 ? "#303030" : undefined }}
+                >
+                  {i === 0 ? (
+                    <>
+                      {text.slice(0, 12)}
+                      {selectedColors.map((c, j) => (
+                        <span key={j} style={{ color: c.color, fontWeight: 600 }}>
+                          {j === 0 ? text.slice(12, 24) : ""}
+                        </span>
+                      ))}
+                      {text.slice(24)}
+                    </>
+                  ) : (
+                    <span style={{ color }}>{text}</span>
+                  )}
+                </p>
+              );
+            })}
+            {/* Inline color demo */}
+            <p className="text-sm leading-relaxed" style={{ color: "#303030" }}>
+              混排效果：
+              {selectedColors.map((c, i) => (
+                <span key={c.color}>
+                  <span style={{ color: c.color, fontWeight: 600 }}>{c.label}</span>
+                  {i < selectedColors.length - 1 && "、"}
+                </span>
+              ))}
+              ——每一种颜色都在传递不同的情绪。
+            </p>
           </div>
         </div>
 
-        {/* Selected preview strip */}
-        {selected.size > 0 && (
-          <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+        {/* Custom color section */}
+        <div className="bg-card border border-border rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-              已选颜色预览
+              自定义颜色
             </h2>
-            <div className="flex gap-3 flex-wrap">
-              {Object.values(COLOR_PALETTE)
-                .flat()
-                .filter((c) => selected.has(c.color))
-                .map((c) => (
-                  <div key={c.color} className="flex flex-col items-center gap-1.5">
-                    <div
-                      className="w-10 h-10 rounded-full shadow-md border-2 border-background"
-                      style={{ background: c.color }}
-                    />
-                    <span className="text-xs text-muted-foreground">{c.label}</span>
-                  </div>
-                ))}
-            </div>
-            <div className="mt-3 p-4 bg-background rounded-lg">
-              <p className="text-sm leading-relaxed">
-                {Object.values(COLOR_PALETTE)
-                  .flat()
-                  .filter((c) => selected.has(c.color))
-                  .map((c, i) => (
-                    <span key={c.color}>
-                      <span style={{ color: c.color, fontWeight: 600 }}>{c.label}</span>
-                      {i < selected.size - 1 && " · "}
-                    </span>
-                  ))}
-              </p>
-              <p className="text-sm mt-2 text-muted-foreground">
-                {Object.values(COLOR_PALETTE)
-                  .flat()
-                  .filter((c) => selected.has(c.color))
-                  .map((c, i) => (
-                    <span key={c.color}>
-                      {i === 0 ? (
-                        <span style={{ color: c.color }}>{SAMPLE_TEXT}</span>
-                      ) : null}
-                    </span>
-                  ))}
-              </p>
-            </div>
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              添加颜色
+            </button>
           </div>
-        )}
 
-        {/* Color categories */}
+          {showAddForm && (
+            <div className="flex items-end gap-3 flex-wrap">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">颜色</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={newColor}
+                    onChange={(e) => setNewColor(e.target.value)}
+                    className="w-10 h-10 rounded cursor-pointer border-none bg-transparent"
+                  />
+                  <input
+                    type="text"
+                    value={newColor}
+                    onChange={(e) => setNewColor(e.target.value)}
+                    className="w-24 px-2 py-1.5 text-sm font-mono rounded-md bg-secondary text-foreground border border-border"
+                    placeholder="#000000"
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">名称（可选）</label>
+                <input
+                  type="text"
+                  value={newLabel}
+                  onChange={(e) => setNewLabel(e.target.value)}
+                  className="w-28 px-2 py-1.5 text-sm rounded-md bg-secondary text-foreground border border-border"
+                  placeholder="我的颜色"
+                />
+              </div>
+              <button
+                onClick={addCustomColor}
+                className="px-4 py-1.5 rounded-md text-sm font-medium bg-foreground text-background hover:opacity-90 transition-opacity"
+              >
+                添加
+              </button>
+            </div>
+          )}
+
+          {customColors.length > 0 ? (
+            <div className="flex gap-2 flex-wrap">
+              {customColors.map((c) => (
+                <div
+                  key={c.color}
+                  className="group relative flex items-center gap-2 bg-secondary rounded-lg px-3 py-2"
+                >
+                  <div className="w-6 h-6 rounded-full" style={{ background: c.color }} />
+                  <span className="text-sm">{c.label}</span>
+                  <span className="text-xs text-muted-foreground font-mono">{c.color}</span>
+                  <button
+                    onClick={() => removeCustomColor(c.color)}
+                    className="ml-1 text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">还没有自定义颜色，点击上方「添加颜色」开始</p>
+          )}
+        </div>
+
+        {/* Color palette categories */}
         {Object.entries(COLOR_PALETTE).map(([category, colors]) => (
           <div key={category} className="space-y-3">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -200,14 +333,9 @@ const ColorPlayground = () => {
                     </div>
                     <div className="text-left min-w-0">
                       <div className="text-sm font-medium truncate">{c.label}</div>
-                      <div className="text-xs text-muted-foreground font-mono">
-                        {c.color}
-                      </div>
-                      <div
-                        className="text-xs mt-0.5 truncate"
-                        style={{ color: c.color }}
-                      >
-                        示例文字
+                      <div className="text-xs text-muted-foreground font-mono">{c.color}</div>
+                      <div className="text-xs mt-0.5 leading-snug" style={{ color: c.color }}>
+                        好的排版是无声的说服力
                       </div>
                     </div>
                   </button>
