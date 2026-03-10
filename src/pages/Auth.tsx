@@ -58,7 +58,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
-      <div className="w-full max-w-sm space-y-6">
+      <div className="w-full max-w-xs sm:max-w-sm space-y-6">
         <div className="text-center space-y-2">
           <img src={momoLogo} alt="Momo Editor" className="w-16 h-16 rounded-2xl mx-auto" />
           <h1 className="text-xl font-bold text-foreground">Momo Editor</h1>
