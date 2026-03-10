@@ -76,7 +76,7 @@ const Index = () => {
   const [markdown, setMarkdown] = useState(DEFAULT_MARKDOWN);
   const [template, setTemplate] = useState(TEMPLATES[0]);
   const [ratio, setRatio] = useState(ASPECT_RATIOS[0]);
-  const [fontSize, setFontSize] = useState(16);
+  const [fontSize, setFontSize] = useState(17);
   const [showEditor, setShowEditor] = useState(true);
   const [exporting, setExporting] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
