@@ -175,16 +175,19 @@ const PaginatedPreview = ({
       const relativeBottom = absoluteBottom - currentOffset;
 
       if (relativeBottom > contentAreaHeight + PAGE_EPSILON) {
-        const pageHeight = Math.max(
-          lineHeight,
-          Math.min(contentAreaHeight, lastFittingBottom - currentOffset)
+        const pageBottom = Math.max(
+          currentOffset + lineHeight,
+          Math.min(currentOffset + contentAreaHeight, lastFittingBottom)
         );
-        heights.push(pageHeight);
-        currentOffset = absoluteTop;
+
+        heights.push(pageBottom - currentOffset);
+        currentOffset = pageBottom;
         offsets.push(currentOffset);
       }
 
-      lastFittingBottom = Math.max(lastFittingBottom, absoluteBottom);
+      if (absoluteTop >= currentOffset - PAGE_EPSILON) {
+        lastFittingBottom = Math.max(lastFittingBottom, absoluteBottom);
+      }
     }
 
     const finalHeight = Math.max(
