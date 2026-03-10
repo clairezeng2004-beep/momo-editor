@@ -21,6 +21,37 @@ import {
 
 const CARD_WIDTH = 420;
 
+// Extracted outside Index to prevent remount on every render
+const CollapsibleSection = ({
+  id,
+  icon: Icon,
+  label,
+  collapsed,
+  onToggle,
+  children,
+}: {
+  id: string;
+  icon: React.ElementType;
+  label: string;
+  collapsed: boolean;
+  onToggle: (id: string) => void;
+  children: React.ReactNode;
+}) => (
+  <section>
+    <button
+      onClick={() => onToggle(id)}
+      className="w-full text-[13px] font-medium mb-3 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+    >
+      <ChevronRight className={`w-3 h-3 transition-transform duration-200 ${collapsed ? "" : "rotate-90"}`} />
+      <Icon className="w-3.5 h-3.5" />
+      {label}
+    </button>
+    <div className={`transition-all duration-200 ${collapsed ? "hidden" : ""}`}>
+      {children}
+    </div>
+  </section>
+);
+
 const TemplateSelector = ({
   selected,
   onSelect,
@@ -185,6 +216,15 @@ const Index = () => {
     return () => clearTimeout(timer);
   }, [markdown, template.id, ratio.id, fontSize, drafts.currentDraftId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Auto-resize textarea
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    }
+  }, [markdown]);
+
   const cardHeight = (CARD_WIDTH / ratio.width) * ratio.height;
 
   // Preprocess: single newline → double newline for paragraph breaks
@@ -244,12 +284,56 @@ const Index = () => {
     [history]
   );
 
+  // Convert HTML back to simple markdown
+  const htmlToMarkdown = useCallback((html: string): string => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    const lines: string[] = [];
+    const processNode = (node: Node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return node.textContent || "";
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return "";
+      const el = node as HTMLElement;
+      const tag = el.tagName;
+      const inner = Array.from(el.childNodes).map(processNode).join("");
+      switch (tag) {
+        case "H1": return `# ${inner}`;
+        case "H2": return `## ${inner}`;
+        case "H3": return `### ${inner}`;
+        case "H4": return `#### ${inner}`;
+        case "BLOCKQUOTE": return `> ${inner}`;
+        case "STRONG": case "B": return `**${inner}**`;
+        case "EM": case "I": return `*${inner}*`;
+        case "BR": return "\n";
+        case "P": case "DIV": return inner;
+        case "UL": return Array.from(el.children).map(li => `- ${processNode(li)}`).join("\n");
+        case "OL": return Array.from(el.children).map((li, i) => `${i + 1}. ${processNode(li)}`).join("\n");
+        case "LI": return inner;
+        case "HR": return "---";
+        case "CODE":
+          if (el.parentElement?.tagName === "PRE") return inner;
+          return `\`${inner}\``;
+        case "PRE": return `\`\`\`\n${inner}\n\`\`\``;
+        default: return inner;
+      }
+    };
+    Array.from(div.childNodes).forEach((node) => {
+      lines.push(processNode(node));
+    });
+    return lines.join("\n");
+  }, []);
+
   // When preview is directly edited
   const handleContentChange = useCallback(() => {
     if (contentRef.current) {
-      setDirectHtml(contentRef.current.innerHTML);
+      const currentHtml = contentRef.current.innerHTML;
+      setDirectHtml(currentHtml);
+      // Sync back to markdown
+      const md = htmlToMarkdown(currentHtml);
+      history.push(md);
     }
-  }, []);
+  }, [htmlToMarkdown, history]);
 
   // Keyboard shortcuts for undo/redo and bold
   useEffect(() => {
@@ -331,29 +415,11 @@ const Index = () => {
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false });
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const CollapsibleSection = ({ id, icon: Icon, label, children }: { id: string; icon: React.ElementType; label: string; children: React.ReactNode }) => {
-    const collapsed = collapsedSections[id] ?? false;
-    return (
-      <section>
-        <button
-          onClick={() => toggleSection(id)}
-          className="w-full text-[13px] font-medium mb-3 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronRight className={`w-3 h-3 transition-transform duration-200 ${collapsed ? "" : "rotate-90"}`} />
-          <Icon className="w-3.5 h-3.5" />
-          {label}
-        </button>
-        <div className={`transition-all duration-200 ${collapsed ? "hidden" : ""}`}>
-          {children}
-        </div>
-      </section>
-    );
-  };
 
   const sidebarContent = (
     <>
       <div className="p-5 space-y-5">
-        <CollapsibleSection id="style" icon={Eye} label="样式">
+        <CollapsibleSection id="style" icon={Eye} label="样式" collapsed={collapsedSections["style"] ?? false} onToggle={toggleSection}>
           <TemplateSelector
             selected={template}
             onSelect={(t) => {
@@ -372,11 +438,11 @@ const Index = () => {
           />
         </CollapsibleSection>
 
-        <CollapsibleSection id="ratio" icon={Ratio} label="比例">
+        <CollapsibleSection id="ratio" icon={Ratio} label="比例" collapsed={collapsedSections["ratio"] ?? false} onToggle={toggleSection}>
           <RatioSelector selected={ratio} onSelect={setRatio} />
         </CollapsibleSection>
 
-        <CollapsibleSection id="font" icon={Type} label={`字号 · ${fontSize}px`}>
+        <CollapsibleSection id="font" icon={Type} label={`字号 · ${fontSize}px`} collapsed={collapsedSections["font"] ?? false} onToggle={toggleSection}>
           <input
             type="range"
             min={12}
@@ -400,7 +466,7 @@ const Index = () => {
       {/* Editor */}
       <div className={`${showEditor ? "block" : "hidden"} lg:block border-t border-border/60`}>
         <div className="p-5 space-y-4">
-          <CollapsibleSection id="editor" icon={Edit3} label="编辑">
+          <CollapsibleSection id="editor" icon={Edit3} label="编辑" collapsed={collapsedSections["editor"] ?? false} onToggle={toggleSection}>
             <div className="flex items-center justify-end gap-0.5 mb-2">
               <button
                 onClick={() => { history.undo(); setDirectHtml(null); }}
@@ -426,13 +492,7 @@ const Index = () => {
             />
             <div className="mt-3">
             <textarea
-              ref={(el) => {
-                (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = el;
-                if (el) {
-                  el.style.height = 'auto';
-                  el.style.height = `${el.scrollHeight}px`;
-                }
-              }}
+              ref={textareaRef}
               value={markdown}
               onChange={(e) => {
                 handleMarkdownChange(e.target.value);
@@ -442,7 +502,7 @@ const Index = () => {
               }}
               className="w-full min-h-[120px] bg-background border border-border/60 rounded-xl p-4 text-[15px] leading-relaxed font-sans resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10 focus:border-foreground/20 text-foreground placeholder:text-muted-foreground/60 transition-all"
               placeholder="在此输入内容，直接换行即可分段..."
-              style={{ overflow: 'hidden' }}
+              style={{ overflow: 'hidden', height: 'auto' }}
             />
             </div>
           </CollapsibleSection>
