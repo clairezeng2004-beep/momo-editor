@@ -4,14 +4,16 @@ import { toPng } from "html-to-image";
 import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
-import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight, Menu } from "lucide-react";
+import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil, ChevronRight, Menu, LogOut } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import FormatToolbar from "@/components/FormatToolbar";
 import FloatingToolbar from "@/components/FloatingToolbar";
 import PaginatedPreview from "@/components/PaginatedPreview";
 import TemplateEditor from "@/components/TemplateEditor";
 import { useHistory } from "@/hooks/use-history";
-import { useDrafts } from "@/hooks/use-drafts";
+import { useCloudDrafts } from "@/hooks/use-cloud-drafts";
 import { useCustomTemplates } from "@/hooks/use-custom-templates";
 import type { CustomTemplate } from "@/hooks/use-custom-templates";
 import {
@@ -152,12 +154,21 @@ const RatioSelector = ({
 );
 
 const Index = () => {
-  const drafts = useDrafts(DEFAULT_MARKDOWN);
+  const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
+  const drafts = useCloudDrafts(DEFAULT_MARKDOWN);
   const customTemplates = useCustomTemplates();
   const [showDraftList, setShowDraftList] = useState(false);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
   const draftDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth", { replace: true });
+    }
+  }, [authLoading, user, navigate]);
 
   // Close draft dropdown on click outside
   useEffect(() => {
@@ -173,12 +184,13 @@ const Index = () => {
 
   // Initialize: load current draft or create one
   useEffect(() => {
+    if (!drafts.loaded) return;
     if (drafts.drafts.length === 0) {
       drafts.createDraft();
     } else if (!drafts.currentDraftId) {
       drafts.switchDraft(drafts.drafts[0].id);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [drafts.loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentDraft = drafts.getCurrentDraft();
   const history = useHistory(currentDraft?.markdown ?? DEFAULT_MARKDOWN);
@@ -416,8 +428,6 @@ const Index = () => {
     }
   };
 
-  const renderedHtml = directHtml ?? getHtml();
-
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({ editor: false, style: true, ratio: true, font: true });
   const toggleSection = (key: string) => setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
@@ -430,6 +440,16 @@ const Index = () => {
       el.style.height = `${el.scrollHeight}px`;
     }
   }, [markdown]);
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground text-sm">加载中...</div>
+      </div>
+    );
+  }
+
+  const renderedHtml = directHtml ?? getHtml();
 
   const settingsContent = (
     <div className="p-5 space-y-5">
@@ -666,14 +686,23 @@ const Index = () => {
             )}
           </div>
         </div>
-        <button
-          onClick={handleExport}
-          disabled={exporting}
-          className="flex items-center gap-2 bg-foreground/90 text-background px-4 py-2 rounded-xl text-[13px] font-medium hover:bg-foreground transition-colors disabled:opacity-50"
-        >
-          <Download className="w-3.5 h-3.5" />
-          {exporting ? "导出中..." : "导出图片"}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="flex items-center gap-2 bg-foreground/90 text-background px-3 sm:px-4 py-2 rounded-xl text-[13px] font-medium hover:bg-foreground transition-colors disabled:opacity-50"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{exporting ? "导出中..." : "导出图片"}</span>
+          </button>
+          <button
+            onClick={signOut}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+            title="退出登录"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
       </header>
 
       {/* Main - Desktop uses resizable panels */}
