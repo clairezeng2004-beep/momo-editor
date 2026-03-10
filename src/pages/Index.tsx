@@ -666,12 +666,78 @@ const Index = () => {
     </div>
   );
 
+  const desktopColorPicker = (
+    <div className="border-t border-border/60 p-5 space-y-4">
+      <CollapsibleSection id="colors" icon={Palette} label="文字颜色" collapsed={collapsedSections["colors"] ?? true} onToggle={toggleSection}>
+        <div className="space-y-3">
+          {Object.entries(COLOR_PALETTE).map(([group, colors]) => (
+            <div key={group}>
+              <p className="text-[11px] text-muted-foreground mb-1.5">{group}</p>
+              <div className="flex gap-2 flex-wrap pb-1">
+                {colors.map((c) => (
+                  <button
+                    key={c.color}
+                    onClick={() => {
+                      document.execCommand("foreColor", false, c.color);
+                      handleContentChange();
+                    }}
+                    className="w-7 h-7 shrink-0 rounded-full border border-border/60 hover:scale-110 transition-transform"
+                    style={{ backgroundColor: c.color }}
+                    title={c.label}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      {/* Eyedropper */}
+      <CollapsibleSection id="eyedropper" icon={Pipette} label="吸管取色" collapsed={collapsedSections["eyedropper"] ?? true} onToggle={toggleSection}>
+        <div className="space-y-3">
+          <input ref={eyedropperFileRef} type="file" accept="image/*" className="hidden" onChange={handleEyedropperUpload} />
+          <button
+            onClick={() => eyedropperFileRef.current?.click()}
+            className="w-full flex items-center justify-center gap-2 bg-secondary/60 text-secondary-foreground px-4 py-2.5 rounded-xl text-[13px] font-medium hover:bg-secondary transition-colors"
+          >
+            <Upload className="w-4 h-4" />
+            上传图片取色
+          </button>
+          {eyedropperImage && (
+            <div className="space-y-2">
+              <div className="relative rounded-lg overflow-hidden border border-border/60">
+                <img ref={eyedropperImgRef} src={eyedropperImage} alt="取色图片" className="hidden" onLoad={handleEyedropperImgLoad} crossOrigin="anonymous" />
+                <canvas ref={eyedropperCanvasRef} onClick={handleEyedropperCanvasClick} className="w-full cursor-crosshair" style={{ imageRendering: "auto" }} />
+              </div>
+              {pickedColor && (
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg border border-border/60" style={{ backgroundColor: pickedColor }} />
+                  <span className="text-[13px] font-mono text-muted-foreground">{pickedColor}</span>
+                  <button
+                    onClick={() => { document.execCommand("foreColor", false, pickedColor); handleContentChange(); }}
+                    className="ml-auto px-3 py-1.5 rounded-lg bg-foreground/90 text-background text-[12px] font-medium hover:bg-foreground transition-colors"
+                  >
+                    应用颜色
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </CollapsibleSection>
+    </div>
+  );
+
   const sidebarContent = (
     <>
       {settingsContent}
       {/* Editor - hidden on mobile, visible on desktop */}
       <div className="hidden lg:block">
         {editorContent}
+      </div>
+      {/* Desktop color picker */}
+      <div className="hidden lg:block">
+        {desktopColorPicker}
       </div>
     </>
   );
