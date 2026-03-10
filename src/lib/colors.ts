@@ -106,9 +106,10 @@ export function getSelectedColors(): ColorItem[] {
     const allColors = [...Object.values(COLOR_PALETTE).flat(), ...customColors];
     const colorMap = new Map(allColors.map(c => [c.color, c]));
     
-    return selectedHexes
+    const result = selectedHexes
       .map(hex => colorMap.get(hex))
       .filter((c): c is ColorItem => !!c);
+    return result.length > 0 ? result : DEFAULT_COLORS;
   } catch {
     return DEFAULT_COLORS;
   }
