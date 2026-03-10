@@ -461,8 +461,31 @@ const Index = () => {
     </div>
   );
 
+  // Generate dynamic CSS for custom templates
+  const customTemplateStyles = customTemplates.templates.map((ct) => `
+    .${ct.className} { background: ${ct.background}; color: ${ct.textColor}; }
+    .${ct.className} .markdown-body h1, .${ct.className} .markdown-body h2 { color: ${ct.headingColor}; }
+  `).join("\n");
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <style>{customTemplateStyles}</style>
+      <TemplateEditor
+        open={showTemplateEditor}
+        onClose={() => { setShowTemplateEditor(false); setEditingTemplate(null); }}
+        onSave={(t) => {
+          customTemplates.addTemplate(t);
+          setTemplate(t);
+          setFontSize(t.defaultFontSize);
+        }}
+        onUpdate={(id, updates) => {
+          customTemplates.updateTemplate(id, updates);
+          if (template.id === id) {
+            setTemplate({ ...template, ...updates });
+          }
+        }}
+        editingTemplate={editingTemplate}
+      />
       {/* Header */}
       <header className="border-b border-border bg-card px-6 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
