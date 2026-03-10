@@ -517,7 +517,7 @@ const Index = () => {
   const previewContent = (
     <div className="flex-1 overflow-auto flex flex-col items-center p-4 lg:p-10 bg-background/80">
       {/* Fixed toolbar above preview */}
-      <div className="sticky top-0 z-10 mb-3 w-full max-w-lg">
+      <div className="mb-3 w-full max-w-lg shrink-0">
         <FloatingToolbar
           containerRef={contentRef}
           onContentChange={handleContentChange}
