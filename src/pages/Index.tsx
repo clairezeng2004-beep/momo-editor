@@ -832,6 +832,10 @@ const Index = () => {
       <div className="flex-1 flex flex-col lg:hidden overflow-hidden">
         <div className="flex-1 overflow-y-auto">
           {previewContent}
+          {/* Tablet: show editor below preview */}
+          <div className="hidden md:block lg:hidden">
+            {editorContent}
+          </div>
         </div>
       </div>
 
