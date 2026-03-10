@@ -595,7 +595,7 @@ const Index = () => {
           {Object.entries(COLOR_PALETTE).map(([group, colors]) => (
             <div key={group}>
               <p className="text-[11px] text-muted-foreground mb-1.5">{group}</p>
-              <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
+              <div className="w-[160px] max-w-full flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide">
                 {colors.map((c) => (
                   <button
                     key={c.color}
@@ -748,7 +748,7 @@ const Index = () => {
                 <Menu className="w-4.5 h-4.5 text-foreground/80" />
               </button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[300px] p-0 overflow-y-auto">
+            <SheetContent side="left" className="w-[272px] max-w-[82vw] p-0 overflow-y-auto sm:w-[284px]">
               <div className="pt-12">
                 {settingsContent}
                 {mobileColorPicker}
