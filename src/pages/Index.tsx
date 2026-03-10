@@ -3,11 +3,14 @@ import { toPng } from "html-to-image";
 import { marked } from "marked";
 import { TEMPLATES, ASPECT_RATIOS, DEFAULT_MARKDOWN } from "@/lib/templates";
 import type { TemplateStyle, AspectRatio } from "@/lib/templates";
-import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown } from "lucide-react";
+import { Download, Type, Ratio, Eye, Edit3, Undo2, Redo2, Plus, FileText, Trash2, ChevronDown, Palette, Pencil } from "lucide-react";
 import FormatToolbar from "@/components/FormatToolbar";
 import PaginatedPreview from "@/components/PaginatedPreview";
+import TemplateEditor from "@/components/TemplateEditor";
 import { useHistory } from "@/hooks/use-history";
 import { useDrafts } from "@/hooks/use-drafts";
+import { useCustomTemplates } from "@/hooks/use-custom-templates";
+import type { CustomTemplate } from "@/hooks/use-custom-templates";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -19,41 +22,69 @@ const CARD_WIDTH = 420;
 const TemplateSelector = ({
   selected,
   onSelect,
+  allTemplates,
+  onCreateNew,
+  onEdit,
+  onDelete,
 }: {
   selected: TemplateStyle;
   onSelect: (t: TemplateStyle) => void;
+  allTemplates: TemplateStyle[];
+  onCreateNew: () => void;
+  onEdit: (t: CustomTemplate) => void;
+  onDelete: (id: string) => void;
 }) => (
   <div className="flex gap-2 flex-wrap">
-    {TEMPLATES.map((t) => (
-      <button
-        key={t.id}
-        onClick={() => onSelect(t)}
-        className={`flex flex-col items-center gap-1 rounded-lg p-2 transition-all border-2 ${
-          selected.id === t.id
-            ? "border-foreground shadow-md scale-105"
-            : "border-transparent hover:border-muted-foreground/30"
-        }`}
-      >
-        <div
-          className="w-10 h-14 rounded-md shadow-sm border border-border"
-          style={{ background: t.previewBg }}
-        >
-          <div
-            className="mt-2 mx-auto w-5 h-0.5 rounded"
-            style={{ background: t.previewText }}
-          />
-          <div
-            className="mt-1 mx-auto w-6 h-0.5 rounded opacity-40"
-            style={{ background: t.previewText }}
-          />
-          <div
-            className="mt-1 mx-auto w-4 h-0.5 rounded opacity-40"
-            style={{ background: t.previewText }}
-          />
+    {allTemplates.map((t) => {
+      const isCustom = "isCustom" in t;
+      return (
+        <div key={t.id} className="relative group">
+          <button
+            onClick={() => onSelect(t)}
+            className={`flex flex-col items-center gap-1 rounded-lg p-2 transition-all border-2 ${
+              selected.id === t.id
+                ? "border-foreground shadow-md scale-105"
+                : "border-transparent hover:border-muted-foreground/30"
+            }`}
+          >
+            <div
+              className="w-10 h-14 rounded-md shadow-sm border border-border"
+              style={{ background: t.previewBg }}
+            >
+              <div className="mt-2 mx-auto w-5 h-0.5 rounded" style={{ background: t.previewText }} />
+              <div className="mt-1 mx-auto w-6 h-0.5 rounded opacity-40" style={{ background: t.previewText }} />
+              <div className="mt-1 mx-auto w-4 h-0.5 rounded opacity-40" style={{ background: t.previewText }} />
+            </div>
+            <span className="text-xs text-muted-foreground">{t.name}</span>
+          </button>
+          {isCustom && (
+            <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 flex gap-0.5 transition-opacity">
+              <button
+                onClick={(e) => { e.stopPropagation(); onEdit(t as CustomTemplate); }}
+                className="w-5 h-5 rounded-full bg-card border border-border shadow flex items-center justify-center hover:bg-secondary"
+              >
+                <Pencil className="w-2.5 h-2.5" />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDelete(t.id); }}
+                className="w-5 h-5 rounded-full bg-card border border-border shadow flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground"
+              >
+                <Trash2 className="w-2.5 h-2.5" />
+              </button>
+            </div>
+          )}
         </div>
-        <span className="text-xs text-muted-foreground">{t.name}</span>
-      </button>
-    ))}
+      );
+    })}
+    <button
+      onClick={onCreateNew}
+      className="flex flex-col items-center gap-1 rounded-lg p-2 transition-all border-2 border-dashed border-border hover:border-muted-foreground/30"
+    >
+      <div className="w-10 h-14 rounded-md border border-dashed border-border flex items-center justify-center">
+        <Plus className="w-4 h-4 text-muted-foreground" />
+      </div>
+      <span className="text-xs text-muted-foreground">自定义</span>
+    </button>
   </div>
 );
 
@@ -83,7 +114,10 @@ const RatioSelector = ({
 
 const Index = () => {
   const drafts = useDrafts(DEFAULT_MARKDOWN);
+  const customTemplates = useCustomTemplates();
   const [showDraftList, setShowDraftList] = useState(false);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<CustomTemplate | null>(null);
   const draftDropdownRef = useRef<HTMLDivElement>(null);
 
   // Close draft dropdown on click outside
@@ -300,7 +334,23 @@ const Index = () => {
           <h2 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
             <Eye className="w-3.5 h-3.5" /> 样式
           </h2>
-          <TemplateSelector selected={template} onSelect={setTemplate} />
+          <TemplateSelector
+            selected={template}
+            onSelect={(t) => {
+              setTemplate(t);
+              // Apply custom template's default font size
+              if ("isCustom" in t) {
+                setFontSize((t as CustomTemplate).defaultFontSize);
+              }
+            }}
+            allTemplates={[...TEMPLATES, ...customTemplates.templates]}
+            onCreateNew={() => { setEditingTemplate(null); setShowTemplateEditor(true); }}
+            onEdit={(t) => { setEditingTemplate(t); setShowTemplateEditor(true); }}
+            onDelete={(id) => {
+              customTemplates.deleteTemplate(id);
+              if (template.id === id) setTemplate(TEMPLATES[0]);
+            }}
+          />
         </section>
 
         {/* Ratio */}
@@ -411,8 +461,31 @@ const Index = () => {
     </div>
   );
 
+  // Generate dynamic CSS for custom templates
+  const customTemplateStyles = customTemplates.templates.map((ct) => `
+    .${ct.className} { background: ${ct.background}; color: ${ct.textColor}; }
+    .${ct.className} .markdown-body h1, .${ct.className} .markdown-body h2 { color: ${ct.headingColor}; }
+  `).join("\n");
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <style>{customTemplateStyles}</style>
+      <TemplateEditor
+        open={showTemplateEditor}
+        onClose={() => { setShowTemplateEditor(false); setEditingTemplate(null); }}
+        onSave={(t) => {
+          customTemplates.addTemplate(t);
+          setTemplate(t);
+          setFontSize(t.defaultFontSize);
+        }}
+        onUpdate={(id, updates) => {
+          customTemplates.updateTemplate(id, updates);
+          if (template.id === id) {
+            setTemplate({ ...template, ...updates });
+          }
+        }}
+        editingTemplate={editingTemplate}
+      />
       {/* Header */}
       <header className="border-b border-border bg-card px-6 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
