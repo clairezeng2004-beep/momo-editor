@@ -584,10 +584,12 @@ const Index = () => {
 
       {/* Main - Desktop uses resizable panels */}
       <div className="flex-1 flex flex-col lg:hidden overflow-hidden">
-        <aside className="w-full border-b border-border/50 bg-card/60 overflow-y-auto shrink-0">
+        <aside className="w-full border-b border-border/50 bg-card/60 overflow-y-auto shrink-0 max-h-[50vh]">
           {sidebarContent}
         </aside>
-        {previewContent}
+        <div className="flex-1 overflow-y-auto">
+          {previewContent}
+        </div>
       </div>
 
       <div className="flex-1 hidden lg:flex overflow-hidden">
