@@ -533,6 +533,34 @@ const Index = () => {
     </div>
   );
 
+  const mobileColorPicker = (
+    <div className="border-t border-border/60 p-5 space-y-4">
+      <CollapsibleSection id="colors" icon={Palette} label="文字颜色" collapsed={collapsedSections["colors"] ?? false} onToggle={toggleSection}>
+        <div className="space-y-3">
+          {Object.entries(COLOR_PALETTE).map(([group, colors]) => (
+            <div key={group}>
+              <p className="text-[11px] text-muted-foreground mb-1.5">{group}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {colors.map((c) => (
+                  <button
+                    key={c.color}
+                    onClick={() => {
+                      document.execCommand("foreColor", false, c.color);
+                      handleContentChange();
+                    }}
+                    className="w-7 h-7 rounded-full border border-border/60 hover:scale-110 transition-transform"
+                    style={{ backgroundColor: c.color }}
+                    title={c.label}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CollapsibleSection>
+    </div>
+  );
+
   const sidebarContent = (
     <>
       {settingsContent}
