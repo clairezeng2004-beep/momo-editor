@@ -26,7 +26,7 @@ interface PaginationState {
 const FOOTER_HEIGHT = 28;
 const LINE_HEIGHT_RATIO = 2;
 const PAGE_EPSILON = 1;
-const CLIP_SAFETY_MARGIN = 10;
+const CLIP_SAFETY_MARGIN = 2;
 
 const getContentRects = (container: HTMLDivElement) => {
   const containerRect = container.getBoundingClientRect();
@@ -198,21 +198,25 @@ const PaginatedPreview = ({
         }
 
         // Check if this line fits entirely within the content area
-        if (line.bottom - pageStart <= contentAreaHeight + PAGE_EPSILON) {
+        // Use a stricter threshold (subtract safety margin) to account for
+        // measurement drift between the offscreen container and display containers
+        if (line.bottom - pageStart <= contentAreaHeight - CLIP_SAFETY_MARGIN + PAGE_EPSILON) {
           lastFittingBottom = Math.max(lastFittingBottom, line.bottom);
           cursor += 1;
           continue;
         }
 
-        // This line doesn't fit — next page should start at its TOP
+        // This line doesn't fit — next page should start before its TOP
+        // to ensure it's fully visible even with rendering drift
         firstNonFittingTop = line.top;
         break;
       }
 
       if (firstNonFittingTop > pageStart + PAGE_EPSILON) {
-        // Clip this page exactly at the top of the first non-fitting line
-        heights.push(Math.max(lineHeight, firstNonFittingTop - pageStart));
-        pageStart = firstNonFittingTop;
+        // Clip this page at the non-fitting line's top minus safety margin
+        const safeBreak = Math.max(pageStart + lineHeight, firstNonFittingTop - CLIP_SAFETY_MARGIN);
+        heights.push(Math.max(lineHeight, safeBreak - pageStart));
+        pageStart = safeBreak;
       } else if (lastFittingBottom > pageStart + PAGE_EPSILON) {
         // All remaining lines fit, or we reached the end
         const clampedEnd = Math.min(totalH, lastFittingBottom);
@@ -230,7 +234,6 @@ const PaginatedPreview = ({
       index = cursor;
     }
 
-    setPagination({ offsets, heights });
     setPagination({ offsets, heights });
   }, [contentAreaHeight, disablePagination, lineHeight]);
 
@@ -272,20 +275,34 @@ const PaginatedPreview = ({
 
   return (
     <>
+      {/* Measurement container: mirrors display card hierarchy for accurate line measurement */}
       <div
-        ref={measureRef}
-        className={`${templateClassName} markdown-body`}
+        className={`${templateClassName}`}
         style={{
           position: "absolute",
           top: 0,
           left: -99999,
           visibility: "hidden",
-          width: cardWidth - padding.x * 2,
+          width: cardWidth,
+          padding: `${padding.y}px ${padding.x}px`,
+          boxSizing: "border-box",
+          fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
+          fontSize: `${fontSize}px`,
+          lineHeight: `${LINE_HEIGHT_RATIO}`,
+          textAlign: textAlign as React.CSSProperties["textAlign"],
           pointerEvents: "none",
-          ...contentTextStyle,
+          background: templateBackground,
         }}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      >
+        <div
+          ref={measureRef}
+          className="markdown-body"
+          style={{
+            ...contentTextStyle,
+          }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </div>
 
       <div className="flex flex-col items-center gap-6">
         {pagination.offsets.map((pageOffset, idx) => {
@@ -294,9 +311,7 @@ const PaginatedPreview = ({
           // Use the exact slice height for this page to prevent overlap/duplication
           const nextOffset = idx < totalPages - 1 ? pagination.offsets[idx + 1] : pageOffset + pageHeight;
           const sliceHeight = Math.min(contentAreaHeight, nextOffset - pageOffset);
-          // Apply safety margin on non-last pages to prevent half-line bleed from measurement drift
-          const safeSliceHeight = idx < totalPages - 1 ? sliceHeight - CLIP_SAFETY_MARGIN : sliceHeight;
-          const renderedContentHeight = disablePagination ? pageHeight : Math.max(lineHeight, safeSliceHeight);
+          const renderedContentHeight = disablePagination ? pageHeight : Math.max(lineHeight, sliceHeight);
           const renderedCardHeight = disablePagination
             ? pageHeight + padding.y * 2 + footerH
             : cardHeight;
