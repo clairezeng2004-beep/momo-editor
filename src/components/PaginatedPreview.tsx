@@ -294,7 +294,9 @@ const PaginatedPreview = ({
           // Use the exact slice height for this page to prevent overlap/duplication
           const nextOffset = idx < totalPages - 1 ? pagination.offsets[idx + 1] : pageOffset + pageHeight;
           const sliceHeight = Math.min(contentAreaHeight, nextOffset - pageOffset);
-          const renderedContentHeight = disablePagination ? pageHeight : sliceHeight;
+          // Apply safety margin on non-last pages to prevent half-line bleed from measurement drift
+          const safeSliceHeight = idx < totalPages - 1 ? sliceHeight - CLIP_SAFETY_MARGIN : sliceHeight;
+          const renderedContentHeight = disablePagination ? pageHeight : Math.max(lineHeight, safeSliceHeight);
           const renderedCardHeight = disablePagination
             ? pageHeight + padding.y * 2 + footerH
             : cardHeight;
