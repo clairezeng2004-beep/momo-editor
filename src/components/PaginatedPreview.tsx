@@ -175,44 +175,57 @@ const PaginatedPreview = ({
     let index = 0;
 
     while (pageStart < totalH - PAGE_EPSILON) {
+      // Skip lines already fully above this page
       while (index < lines.length && lines[index].bottom <= pageStart + PAGE_EPSILON) {
         index += 1;
       }
 
       offsets.push(pageStart);
 
-      let pageEnd = pageStart;
+      let lastFittingBottom = pageStart;
       let cursor = index;
+      let firstNonFittingTop = -1;
 
       while (cursor < lines.length) {
         const line = lines[cursor];
 
+        // Skip lines that start before/at current page start (already consumed)
         if (line.top < pageStart + PAGE_EPSILON) {
+          lastFittingBottom = Math.max(lastFittingBottom, line.bottom);
           cursor += 1;
           continue;
         }
 
+        // Check if this line fits entirely within the content area
         if (line.bottom - pageStart <= contentAreaHeight + PAGE_EPSILON) {
-          pageEnd = Math.max(pageEnd, line.bottom);
+          lastFittingBottom = Math.max(lastFittingBottom, line.bottom);
           cursor += 1;
           continue;
         }
 
+        // This line doesn't fit — next page should start at its TOP
+        firstNonFittingTop = line.top;
         break;
       }
 
-      if (pageEnd <= pageStart + PAGE_EPSILON) {
-        pageEnd = Math.min(totalH, pageStart + contentAreaHeight);
+      if (firstNonFittingTop > pageStart + PAGE_EPSILON) {
+        // Clip this page exactly at the top of the first non-fitting line
+        heights.push(Math.max(lineHeight, firstNonFittingTop - pageStart));
+        pageStart = firstNonFittingTop;
+      } else if (lastFittingBottom > pageStart + PAGE_EPSILON) {
+        // All remaining lines fit, or we reached the end
+        const clampedEnd = Math.min(totalH, lastFittingBottom);
+        heights.push(Math.max(lineHeight, clampedEnd - pageStart));
+        if (clampedEnd >= totalH - PAGE_EPSILON) break;
+        pageStart = clampedEnd;
+      } else {
+        // No lines found — advance by contentAreaHeight
+        const clampedEnd = Math.min(totalH, pageStart + contentAreaHeight);
+        heights.push(Math.max(lineHeight, clampedEnd - pageStart));
+        if (clampedEnd >= totalH - PAGE_EPSILON) break;
+        pageStart = clampedEnd;
       }
 
-      const clampedPageEnd = Math.min(totalH, pageEnd);
-      heights.push(Math.max(lineHeight, clampedPageEnd - pageStart));
-
-      if (clampedPageEnd >= totalH - PAGE_EPSILON) {
-        break;
-      }
-
-      pageStart = clampedPageEnd;
       index = cursor;
     }
 
