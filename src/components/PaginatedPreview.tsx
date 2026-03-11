@@ -198,21 +198,25 @@ const PaginatedPreview = ({
         }
 
         // Check if this line fits entirely within the content area
-        if (line.bottom - pageStart <= contentAreaHeight + PAGE_EPSILON) {
+        // Use a stricter threshold (subtract safety margin) to account for
+        // measurement drift between the offscreen container and display containers
+        if (line.bottom - pageStart <= contentAreaHeight - CLIP_SAFETY_MARGIN + PAGE_EPSILON) {
           lastFittingBottom = Math.max(lastFittingBottom, line.bottom);
           cursor += 1;
           continue;
         }
 
-        // This line doesn't fit — next page should start at its TOP
+        // This line doesn't fit — next page should start before its TOP
+        // to ensure it's fully visible even with rendering drift
         firstNonFittingTop = line.top;
         break;
       }
 
       if (firstNonFittingTop > pageStart + PAGE_EPSILON) {
-        // Clip this page exactly at the top of the first non-fitting line
-        heights.push(Math.max(lineHeight, firstNonFittingTop - pageStart));
-        pageStart = firstNonFittingTop;
+        // Clip this page at the non-fitting line's top minus safety margin
+        const safeBreak = Math.max(pageStart + lineHeight, firstNonFittingTop - CLIP_SAFETY_MARGIN);
+        heights.push(Math.max(lineHeight, safeBreak - pageStart));
+        pageStart = safeBreak;
       } else if (lastFittingBottom > pageStart + PAGE_EPSILON) {
         // All remaining lines fit, or we reached the end
         const clampedEnd = Math.min(totalH, lastFittingBottom);
@@ -230,7 +234,6 @@ const PaginatedPreview = ({
       index = cursor;
     }
 
-    setPagination({ offsets, heights });
     setPagination({ offsets, heights });
   }, [contentAreaHeight, disablePagination, lineHeight]);
 
