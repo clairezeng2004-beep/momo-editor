@@ -26,7 +26,7 @@ interface PaginationState {
 const FOOTER_HEIGHT = 28;
 const LINE_HEIGHT_RATIO = 2;
 const PAGE_EPSILON = 1;
-const CLIP_SAFETY_MARGIN = 10;
+const CLIP_SAFETY_MARGIN = 2;
 
 const getContentRects = (container: HTMLDivElement) => {
   const containerRect = container.getBoundingClientRect();
