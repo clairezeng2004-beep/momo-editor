@@ -229,6 +229,7 @@ const PaginatedPreview = ({
       index = cursor;
     }
 
+    console.log('[PAGINATE]', { offsets, heights, contentAreaHeight, totalH, lineCount: lines.length, lines: lines.slice(0, 20) });
     setPagination({ offsets, heights });
   }, [contentAreaHeight, disablePagination, lineHeight]);
 
