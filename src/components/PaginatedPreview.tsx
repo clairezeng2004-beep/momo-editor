@@ -181,6 +181,9 @@ const PaginatedPreview = ({
         index += 1;
       }
 
+      // No more content lines — don't create an empty trailing page
+      if (index >= lines.length) break;
+
       offsets.push(pageStart);
 
       let lastFittingBottom = pageStart;
