@@ -275,20 +275,34 @@ const PaginatedPreview = ({
 
   return (
     <>
+      {/* Measurement container: mirrors display card hierarchy for accurate line measurement */}
       <div
-        ref={measureRef}
-        className={`${templateClassName} markdown-body`}
+        className={`${templateClassName}`}
         style={{
           position: "absolute",
           top: 0,
           left: -99999,
           visibility: "hidden",
-          width: cardWidth - padding.x * 2,
+          width: cardWidth,
+          padding: `${padding.y}px ${padding.x}px`,
+          boxSizing: "border-box",
+          fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
+          fontSize: `${fontSize}px`,
+          lineHeight: `${LINE_HEIGHT_RATIO}`,
+          textAlign: textAlign as React.CSSProperties["textAlign"],
           pointerEvents: "none",
-          ...contentTextStyle,
+          background: templateBackground,
         }}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      >
+        <div
+          ref={measureRef}
+          className="markdown-body"
+          style={{
+            ...contentTextStyle,
+          }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      </div>
 
       <div className="flex flex-col items-center gap-6">
         {pagination.offsets.map((pageOffset, idx) => {
