@@ -276,7 +276,10 @@ const PaginatedPreview = ({
         {pagination.offsets.map((pageOffset, idx) => {
           const pageHeight = pagination.heights[idx] ?? contentAreaHeight;
           const totalPages = pagination.offsets.length;
-          const renderedContentHeight = disablePagination ? pageHeight : contentAreaHeight;
+          // Use the exact slice height for this page to prevent overlap/duplication
+          const nextOffset = idx < totalPages - 1 ? pagination.offsets[idx + 1] : pageOffset + pageHeight;
+          const sliceHeight = Math.min(contentAreaHeight, nextOffset - pageOffset);
+          const renderedContentHeight = disablePagination ? pageHeight : sliceHeight;
           const renderedCardHeight = disablePagination
             ? pageHeight + padding.y * 2 + footerH
             : cardHeight;
@@ -307,6 +310,7 @@ const PaginatedPreview = ({
                   overflow: "hidden",
                   display: "flex",
                   flexDirection: "column",
+                  justifyContent: "space-between",
                   background: templateBackground,
                   wordBreak: "break-word",
                   overflowWrap: "break-word",
