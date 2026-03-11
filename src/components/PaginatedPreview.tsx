@@ -310,6 +310,7 @@ const PaginatedPreview = ({
                   overflow: "hidden",
                   display: "flex",
                   flexDirection: "column",
+                  justifyContent: "space-between",
                   background: templateBackground,
                   wordBreak: "break-word",
                   overflowWrap: "break-word",
