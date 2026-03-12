@@ -267,8 +267,11 @@
   background: rgba(128, 128, 128, 0.08);
   padding: 1em;
   border-radius: 6px;
-  overflow-x: auto;
+  overflow-x: hidden;
   margin: 0.8em 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .markdown-body pre code {
