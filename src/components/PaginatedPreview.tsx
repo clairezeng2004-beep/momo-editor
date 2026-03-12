@@ -126,6 +126,7 @@ const PaginatedPreview = ({
   const contentTextStyle: React.CSSProperties = {
     width: "100%",
     maxWidth: "100%",
+    paddingRight: `${HORIZONTAL_SAFE_GUTTER}px`,
     fontSize: `${fontSize}px`,
     lineHeight: `${LINE_HEIGHT_RATIO}`,
     textAlign: textAlign as React.CSSProperties["textAlign"],
