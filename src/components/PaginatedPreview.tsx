@@ -124,12 +124,15 @@ const PaginatedPreview = ({
   const contentAreaHeight = Math.max(lineHeight, Math.floor(rawContentHeight));
   const contentTextStyle: React.CSSProperties = {
     width: "100%",
+    maxWidth: "100%",
     fontSize: `${fontSize}px`,
     lineHeight: `${LINE_HEIGHT_RATIO}`,
     textAlign: textAlign as React.CSSProperties["textAlign"],
     fontFamily: '"Noto Sans SC", system-ui, -apple-system, sans-serif',
-    wordBreak: "break-word",
-    overflowWrap: "break-word",
+    whiteSpace: "normal",
+    wordBreak: "break-all",
+    overflowWrap: "anywhere",
+    overflowX: "hidden",
     display: "flow-root",
     boxSizing: "border-box",
   };
