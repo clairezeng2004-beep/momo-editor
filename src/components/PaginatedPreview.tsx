@@ -27,6 +27,7 @@ const FOOTER_HEIGHT = 28;
 const LINE_HEIGHT_RATIO = 2;
 const PAGE_EPSILON = 1;
 const CLIP_SAFETY_MARGIN = 2;
+const HORIZONTAL_SAFE_GUTTER = 4;
 
 const getContentRects = (container: HTMLDivElement) => {
   const containerRect = container.getBoundingClientRect();
@@ -125,6 +126,7 @@ const PaginatedPreview = ({
   const contentTextStyle: React.CSSProperties = {
     width: "100%",
     maxWidth: "100%",
+    paddingRight: `${HORIZONTAL_SAFE_GUTTER}px`,
     fontSize: `${fontSize}px`,
     lineHeight: `${LINE_HEIGHT_RATIO}`,
     textAlign: textAlign as React.CSSProperties["textAlign"],

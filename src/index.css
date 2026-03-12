@@ -223,6 +223,9 @@
 
 .markdown-body em {
   font-style: italic;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  padding-right: 0.08em;
 }
 
 .markdown-body ul {
